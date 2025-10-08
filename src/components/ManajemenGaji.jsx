@@ -58,7 +58,7 @@ const ManajemenGaji = ({
         return g;
       }
 
-      // KASBON optional → kalau kosong simpan 0
+      // Bonus optional → kalau kosong simpan 0
       const rawBonus = temp.bonus ?? g.bonus ?? "";
       const bonusNum = rawBonus === "" ? 0 : Number(rawBonus);
 
@@ -116,7 +116,7 @@ const ManajemenGaji = ({
           <tr className="bg-[#E1F1DD] text-black">
             <th className="p-2 w-64 text-left">Nama Karyawan</th>
             <th className="p-2 w-48">Upah per Hari</th>
-            <th className="p-2 w-48">Kasbon</th>
+            <th className="p-2 w-48">Bonus</th>
             <th className="p-2 w-48">Aksi</th>
           </tr>
         </thead>
@@ -158,12 +158,12 @@ const ManajemenGaji = ({
                     )}
                   </td>
 
-                  {/* Kasbon */}
+                  {/* Bonus */}
                   <td className="p-2 relative">
                     {isEditing ? (
                       <input
                         type="number"
-                        placeholder="Isi kasbon"
+                        placeholder="Isi bonus"
                         value={getInputValue(item, "bonus")}
                         onChange={(e) =>
                           handleInputChange(id, "bonus", e.target.value)

@@ -162,44 +162,47 @@ function InputPengeluaranKas() {
         </form>
       </div>
 
-      {/* Log Pengeluaran */}
-      <div className="bg-white p-5 rounded-lg shadow-md">
-        <h3 className="text-xl font-bold mb-4">Log Pengeluaran</h3>
-        <table className="w-full table-auto text-center border-collapse">
-          <thead>
-            <tr className="bg-[#E1F1DD] text-black">
-              <th className="p-2">Tanggal</th>
-              <th className="p-2 w-60">Nominal</th>
-              <th className="p-2 w-24">Jenis Pembayaran</th>
-              <th className="p-2 w-28">Jenis Pengeluaran</th>
-              <th className="p-2">Deskripsi</th>
-              <th className="p-2">Nama Karyawan</th>
-              <th className="p-2">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pengeluaranList.length === 0 && (
-              <tr>
-                <td colSpan="7" className="p-4 italic text-gray-500">Data Tidak Ditemukan</td>
-              </tr>
-            )}
-            {pengeluaranList.map((p) => (
-              <tr key={p.id} className="border-b">
-                <td className="p-2">{p.tanggal}</td>
-                <td className="p-2 w-40">Rp {p.nominal.toLocaleString("id-ID")}</td>
-                <td className="p-2 w-28">{p.jenisPembayaran}</td>
-                <td className="p-2 w-32">{p.jenis}</td>
-                <td className="p-2">{p.deskripsi}</td>
-                <td className="p-2">{p.namaKaryawan}</td>
-                <td className="p-2 flex justify-center items-center gap-2">
-                  <ButtonModular variant="warning" onClick={() => handleEdit(p)}>Edit</ButtonModular>
-                  <ButtonModular variant="danger" onClick={() => handleDelete(p.id)}>Hapus</ButtonModular>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+ {/* Log Pengeluaran */}
+<div className="bg-white p-5 rounded-lg shadow-md overflow-x-auto">
+  <h3 className="text-xl font-bold mb-4">Log Pengeluaran</h3>
+  <table className="min-w-[1000px] table-auto text-center border-collapse">
+    <thead>
+      <tr className="bg-[#E1F1DD] text-black">
+        <th className="p-2 min-w-[120px]">Tanggal</th>
+        <th className="p-2 min-w-[180px]">Nominal</th>
+        <th className="p-2 min-w-[190px]">Jenis Pembayaran</th>
+        <th className="p-2 min-w-[190px]">Jenis Pengeluaran</th>
+        <th className="p-2 min-w-[180px]">Deskripsi</th>
+        <th className="p-2 min-w-[180px]">Nama Karyawan</th>
+        <th className="p-2 min-w-[140px]">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {pengeluaranList.length === 0 && (
+        <tr>
+          <td colSpan="7" className="p-4 italic text-gray-500">
+            Data Tidak Ditemukan
+          </td>
+        </tr>
+      )}
+      {pengeluaranList.map((p) => (
+        <tr key={p.id} className="border-b">
+          <td className="p-2">{p.tanggal}</td>
+          <td className="p-2">Rp {p.nominal.toLocaleString("id-ID")}</td>
+          <td className="p-2">{p.jenisPembayaran}</td>
+          <td className="p-2">{p.jenis}</td>
+          <td className="p-2">{p.deskripsi}</td>
+          <td className="p-2">{p.namaKaryawan}</td>
+          <td className="p-2 flex justify-center items-center gap-2">
+            <ButtonModular variant="warning" onClick={() => handleEdit(p)}>Edit</ButtonModular>
+            <ButtonModular variant="danger" onClick={() => handleDelete(p.id)}>Hapus</ButtonModular>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
     </main>
   );
 }

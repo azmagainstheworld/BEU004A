@@ -20,9 +20,14 @@ function Sidebar() {
 
   return (
     <aside className="w-72 flex-shrink-0 p-4 border-r border-gray-200 relative glass-sidebar overflow-y-scroll">
-      <h2 className="text-2xl font-extrabold mb-6 tracking-wide glass-logo">
-        OKU-<span className="text-green-600">BEU004A</span>
-      </h2>
+      <div className="flex flex-col items-center justify-center mt-6 mb-10">
+        {/* Logo */}
+        <img
+          src="src/assets/logojnt.png" // ganti sesuai path logo
+          alt="Logo"
+          className="h-32 w-32 object-contain rounded-full shadow-lg mx-auto"
+        />
+      </div>
       <nav className="flex flex-col gap-2">
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -62,14 +67,6 @@ function Sidebar() {
           border-radius: 0.5rem;
           box-shadow: 0 0 12px rgba(0,0,0,0.1);
         }
-
-        /* Diagonal Glow Effect */
-        @keyframes glow-diagonal {
-          0%,100% { box-shadow: 3px 3px 12px rgba(34,197,94,0.5), -3px -3px 10px rgba(34,197,94,0.3); }
-          50% { box-shadow: 6px 6px 20px rgba(34,197,94,0.7), -6px -6px 15px rgba(34,197,94,0.4); }
-        }
-        .glow-diagonal { animation: glow-diagonal 2.5s ease-in-out infinite alternate; }
-        .glow-icon-diagonal { animation: glow-diagonal 2.5s ease-in-out infinite alternate; }
 
         /* Scrollbar Custom */
         aside::-webkit-scrollbar { width: 8px; }

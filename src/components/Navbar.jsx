@@ -5,12 +5,19 @@ function Navbar() {
     <header className="w-full glass-navbar border-b border-gray-200 fixed top-0 z-50">
       <div className="px-6 py-3 flex items-center justify-end h-16">
         {/* Logo */}
-        <img
-          src="/logo.png" // ganti sesuai path logo
-          alt="Logo"
-          className="h-12 w-12 object-contain rounded-full shadow-sm border border-gray-200 transition-transform duration-300 hover:scale-105"
-        />
+        <div className="flex items-center gap-3">
+                    <span className="text-lg font-bold text-[#006400]"
+          style={{ fontFamily: "Arial, sans-serif" }}>
+              J&amp;T Cargo Mitra BEU004A
+          </span>
+
+          <img
+            src="src/assets/logojnt.png" // ganti sesuai path logo
+            alt="Logo"
+            className="h-12 w-12 object-contain rounded-full shadow-sm border border-gray-200 transition-transform duration-300 hover:scale-105"
+          />
       </div>
+    </div>
 
       <style>{`
         /* Glassy Pastel Hijau Navbar */
