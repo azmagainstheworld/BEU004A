@@ -17,6 +17,7 @@ import LaporanKeuangan from "./pages/LaporanKeuangan";
 import ManajemenGaji from "./pages/ManajemenGaji";
 import ManajemenKaryawan from "./pages/ManajemenKaryawan";
 import Presensi from "./pages/Presensi";
+import ManajemenAkun from "./pages/ManajemenAkun";
 
 // Context
 import { FinanceProvider } from "./context/FinanceContext";
@@ -57,6 +58,7 @@ function App() {
                       <Route path="/gaji-karyawan" element={<GajiKaryawan />} />
                       <Route path="/manajemen-gaji" element={<ManajemenGaji />} />
                       <Route path="/manajemen-karyawan" element={<ManajemenKaryawan />} />
+                      <Route path="/manajemen-akun" element={<ManajemenAkun />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </MainLayout>
