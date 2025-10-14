@@ -1,176 +1,224 @@
 import React from "react";
 import ButtonModular from "./ButtonModular";
+import { Lock, Trash2, UserPlus } from "lucide-react";
 
 export default function ManajemenAkunUI({
-  currentUser,
-  admins,
-  alert,
-  showAddModal,
-  setShowAddModal,
-  showChangeModal,
-  setShowChangeModal,
-  newAdmin,
-  setNewAdmin,
-  changePassword,
-  setChangePassword,
-  handleAddAdmin,
-  handleChangePassword,
-  handleSelfPasswordChange,
+  superAdmin,
+  adminList,
+  modalType,
+  selectedAdmin,
+  formData,
+  onFormChange,
+  onAddAdmin,
+  onEditPassword,
+  onDeleteAdmin,
+  onConfirmDelete,
+  onConfirmAdd,
+  onConfirmEdit,
+  onCloseModal,
 }) {
   return (
-    <div className="p-6 w-full">
-      {/* Judul */}
-      <h2 className="text-2xl font-bold mb-6">Manajemen Akun</h2>
-
-      {/* Alert */}
-      {alert && (
-        <div
-          className={`mb-4 p-3 rounded-lg text-white ${
-            alert.type === "error" ? "bg-red-500" : "bg-green-600"
-          }`}
-        >
-          {alert.text}
+    <div className="space-y-6">
+      {/* === Profil Super Admin === */}
+      <div className="bg-white p-6 rounded-2xl shadow-md">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Profil Super Admin
+        </h2>
+        <div className="space-y-2">
+          <p>
+            <span className="font-semibold">Username:</span> {superAdmin.username}
+          </p>
+          <p>
+            <span className="font-semibold">Email:</span> {superAdmin.email}
+          </p>
+          <p>
+            <span className="font-semibold">Role:</span> {superAdmin.role}
+          </p>
         </div>
-      )}
-
-      {/* Tombol Tambah Admin */}
-      {currentUser.role === "Super Admin" && (
-        <div className="mb-6">
-          <ButtonModular variant="success" onClick={() => setShowAddModal(true)}>
-            + Tambah Admin
+        <div className="mt-4">
+          <ButtonModular variant="warning" onClick={() => onEditPassword(superAdmin)}>
+            <Lock className="inline mr-2 w-4 h-4" /> Ubah Password
           </ButtonModular>
         </div>
-      )}
+      </div>
 
-      {/* Tabel Admin */}
-      <div className="bg-white shadow rounded-lg p-4 overflow-x-auto">
-        <table className="w-full border-collapse min-w-[700px]">
+      {/* === Daftar Admin === */}
+      <div className="bg-white p-6 rounded-2xl shadow-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">Daftar Admin</h2>
+          <ButtonModular variant="success" onClick={onAddAdmin}>
+            <UserPlus className="inline mr-2 w-4 h-4" /> Tambah Admin
+          </ButtonModular>
+        </div>
+
+        <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-[#EDFFEC]">
-              <th className="text-left p-2">No</th>
-              <th className="text-left p-2">Username</th>
-              <th className="text-left p-2">Role</th>
-              {currentUser.role === "Super Admin" && (
-                <th className="text-center p-2">Aksi</th>
-              )}
+            <tr className="bg-green-100 text-left">
+              <th className="p-3">No</th>
+              <th className="p-3">Username</th>
+              <th className="p-3">Email</th>
+              <th className="p-3">Role</th>
+              <th className="p-3 text-center">Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {admins.length === 0 && (
-              <tr>
-                <td colSpan="4" className="text-center py-3 text-gray-500">
-                  Belum ada admin terdaftar
+            {adminList.map((admin, index) => (
+              <tr key={admin.id} className="border-t hover:bg-green-50">
+                <td className="p-3">{index + 1}</td>
+                <td className="p-3">{admin.username}</td>
+                <td className="p-3">{admin.email}</td>
+                <td className="p-3">{admin.role}</td>
+                <td className="p-3 text-center space-x-2">
+                  <ButtonModular variant="warning" onClick={() => onEditPassword(admin)}>
+                    <Lock className="inline mr-1 w-4 h-4" /> Ubah Password
+                  </ButtonModular>
+                  <ButtonModular variant="danger" onClick={() => onDeleteAdmin(admin)}>
+                    <Trash2 className="inline mr-1 w-4 h-4" /> Hapus
+                  </ButtonModular>
                 </td>
-              </tr>
-            )}
-            {admins.map((a, index) => (
-              <tr key={a.id} className="border-t">
-                <td className="p-2">{index + 1}</td>
-                <td className="p-2">{a.username}</td>
-                <td className="p-2">{a.role}</td>
-                {currentUser.role === "Super Admin" && (
-                  <td className="p-2 text-center">
-                    <ButtonModular
-                      variant="warning"
-                      onClick={() => {
-                        setChangePassword({ id: a.id, password: "" });
-                        setShowChangeModal(true);
-                      }}
-                    >
-                      Ubah Password
-                    </ButtonModular>
-                  </td>
-                )}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Ubah Password Sendiri */}
-      <div className="mt-10">
-        <h3 className="text-lg font-semibold mb-3">Ubah Password Akun Sendiri</h3>
-        <div className="flex gap-4">
-          <input
-            type="password"
-            placeholder="Password baru"
-            className="border rounded-lg p-2 flex-1"
-            value={changePassword.password}
-            onChange={(e) =>
-              setChangePassword({ ...changePassword, password: e.target.value })
-            }
-          />
-          <ButtonModular variant="success" onClick={handleSelfPasswordChange}>
-            Simpan
-          </ButtonModular>
-        </div>
-      </div>
+      {/* === Modal Tambah Admin === */}
+      {modalType === "add" && (
+        <>
+          {/* Backdrop full blur */}
+          <div className="fixed inset-0 z-[9998]">
+            <div className="absolute inset-0 backdrop-blur-md bg-white/10" />
+          </div>
 
-      {/* Modal Tambah Admin */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-[400px] shadow-lg">
-            <h3 className="text-lg font-bold mb-4">Tambah Admin Baru</h3>
-            <div className="mb-3">
-              <label className="block text-sm">Username</label>
-              <input
-                type="text"
-                className="border rounded-lg w-full p-2"
-                value={newAdmin.username}
-                onChange={(e) =>
-                  setNewAdmin({ ...newAdmin, username: e.target.value })
-                }
-              />
-            </div>
-            <div className="mb-3">
-              <label className="block text-sm">Password</label>
-              <input
-                type="password"
-                className="border rounded-lg w-full p-2"
-                value={newAdmin.password}
-                onChange={(e) =>
-                  setNewAdmin({ ...newAdmin, password: e.target.value })
-                }
-              />
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <ButtonModular variant="secondary" onClick={() => setShowAddModal(false)}>
-                Batal
-              </ButtonModular>
-              <ButtonModular variant="primary" onClick={handleAddAdmin}>
-                Simpan
-              </ButtonModular>
+          {/* Modal content */}
+          <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+            <div className="bg-white rounded-xl shadow-xl p-6 w-[400px] space-y-4">
+              <h2 className="text-lg font-semibold text-gray-800">Tambah Admin Baru</h2>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  placeholder="Username"
+                  className="w-full border rounded-lg p-2"
+                  value={formData.username}
+                  onChange={(e) =>
+                    onFormChange({ ...formData, username: e.target.value })
+                  }
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  className="w-full border rounded-lg p-2"
+                  value={formData.email}
+                  onChange={(e) => onFormChange({ ...formData, email: e.target.value })}
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  className="w-full border rounded-lg p-2"
+                  value={formData.password}
+                  onChange={(e) =>
+                    onFormChange({ ...formData, password: e.target.value })
+                  }
+                />
+                <input
+                  type="password"
+                  placeholder="Konfirmasi Password"
+                  className="w-full border rounded-lg p-2"
+                  value={formData.confirmPassword}
+                  onChange={(e) =>
+                    onFormChange({ ...formData, confirmPassword: e.target.value })
+                  }
+                />
+              </div>
+              <div className="flex justify-end space-x-2 mt-4">
+                <ButtonModular variant="warning" onClick={onCloseModal}>
+                  Batal
+                </ButtonModular>
+                <ButtonModular variant="success" onClick={onConfirmAdd}>
+                  Simpan
+                </ButtonModular>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* Modal Ubah Password Admin */}
-      {showChangeModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-[400px] shadow-lg">
-            <h3 className="text-lg font-bold mb-4">Ubah Password Admin</h3>
-            <div className="mb-3">
-              <label className="block text-sm">Password Baru</label>
+      {/* === Modal Ubah Password === */}
+      {modalType === "edit" && (
+        <>
+          {/* Backdrop full blur */}
+          <div className="fixed inset-0 z-[9998]">
+            <div className="absolute inset-0 backdrop-blur-md bg-white/10" />
+          </div>
+
+          {/* Modal content */}
+          <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+            <div className="bg-white rounded-xl shadow-xl p-6 w-[400px] space-y-4">
+              <h2 className="text-lg font-semibold text-gray-800">Ubah Password</h2>
+              <p>
+                Ubah password untuk{" "}
+                <span className="font-semibold">{selectedAdmin?.username}</span>
+              </p>
               <input
                 type="password"
-                className="border rounded-lg w-full p-2"
-                value={changePassword.password}
+                placeholder="Password Baru"
+                className="w-full border rounded-lg p-2"
+                value={formData.password}
                 onChange={(e) =>
-                  setChangePassword({ ...changePassword, password: e.target.value })
+                  onFormChange({ ...formData, password: e.target.value })
                 }
               />
-            </div>
-            <div className="flex justify-end gap-3 mt-4">
-              <ButtonModular variant="secondary" onClick={() => setShowChangeModal(false)}>
-                Batal
-              </ButtonModular>
-              <ButtonModular variant="primary" onClick={handleChangePassword}>
-                Simpan
-              </ButtonModular>
+              <input
+                type="password"
+                placeholder="Konfirmasi Password Baru"
+                className="w-full border rounded-lg p-2"
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  onFormChange({ ...formData, confirmPassword: e.target.value })
+                }
+              />
+              <div className="flex justify-end space-x-2 mt-4">
+                <ButtonModular variant="warning" onClick={onCloseModal}>
+                  Batal
+                </ButtonModular>
+                <ButtonModular variant="success" onClick={onConfirmEdit}>
+                  Simpan
+                </ButtonModular>
+              </div>
             </div>
           </div>
-        </div>
+        </>
+      )}
+
+      {/* === Modal Hapus Admin === */}
+      {modalType === "delete" && (
+        <>
+          {/* Backdrop full blur */}
+          <div className="fixed inset-0 z-[9998]">
+            <div className="absolute inset-0 backdrop-blur-md bg-white/10" />
+          </div>
+
+          {/* Modal content */}
+          <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+            <div className="bg-white rounded-xl shadow-xl p-6 w-[400px] space-y-4">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Konfirmasi Penghapusan
+              </h2>
+              <p>
+                Apakah Anda yakin ingin menghapus{" "}
+                <span className="font-semibold">{selectedAdmin?.username}</span>?
+              </p>
+              <div className="flex justify-end space-x-2 mt-4">
+                <ButtonModular variant="warning" onClick={onCloseModal}>
+                  Batal
+                </ButtonModular>
+                <ButtonModular variant="danger" onClick={onConfirmDelete}>
+                  Hapus
+                </ButtonModular>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

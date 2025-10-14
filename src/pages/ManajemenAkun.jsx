@@ -2,80 +2,116 @@ import React, { useState } from "react";
 import ManajemenAkunUI from "../components/ManajemenAkun";
 
 export default function ManajemenAkunPage() {
-  const [admins, setAdmins] = useState([
-    { id: 1, username: "admin1", role: "Admin" },
-    { id: 2, username: "admin2", role: "Admin" },
+  const [superAdmin] = useState({
+    id: 1,
+    username: "Super Admin",
+    email: "superadmin@company.com",
+    role: "Super Admin",
+  });
+
+  const [adminList, setAdminList] = useState([
+    { id: 2, username: "Admin Gudang", email: "gudang@company.com", role: "Admin" },
+    { id: 3, username: "Admin Keuangan", email: "finance@company.com", role: "Admin" },
   ]);
 
-  const [alert, setAlert] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showChangeModal, setShowChangeModal] = useState(false);
-  const [newAdmin, setNewAdmin] = useState({ username: "", password: "" });
-  const [changePassword, setChangePassword] = useState({ id: "", password: "" });
+  const [modalType, setModalType] = useState(null);
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
-  // contoh user login sekarang
-  const currentUser = { username: "superadmin", role: "Super Admin" };
-
-  // Handler: tambah admin
+  // === Tambah Admin ===
   const handleAddAdmin = () => {
-    if (newAdmin.password.length < 8) {
-      setAlert({ type: "error", text: "Password minimal 8 karakter." });
+    setFormData({ username: "", email: "", password: "", confirmPassword: "" });
+    setModalType("add");
+  };
+
+  // === Edit Password ===
+  const handleEditPassword = (admin) => {
+    setSelectedAdmin(admin);
+    setFormData({
+      username: admin.username,
+      email: admin.email,
+      password: "",
+      confirmPassword: "",
+    });
+    setModalType("edit");
+  };
+
+  // === Hapus Admin ===
+  const handleDeleteAdmin = (admin) => {
+    setSelectedAdmin(admin);
+    setModalType("delete");
+  };
+
+  // === Konfirmasi Hapus ===
+  const handleConfirmDelete = () => {
+    if (selectedAdmin) {
+      setAdminList((prev) => prev.filter((a) => a.id !== selectedAdmin.id));
+    }
+    setSelectedAdmin(null);
+    setModalType(null);
+  };
+
+  // === Konfirmasi Tambah ===
+  const handleConfirmAdd = () => {
+    const { username, email, password, confirmPassword } = formData;
+    if (!username || !email || !password || !confirmPassword) {
+      alert("Semua field wajib diisi!");
+      return;
+    }
+    if (password !== confirmPassword) {
+      alert("Konfirmasi password tidak cocok!");
       return;
     }
 
-    const newData = {
-      id: admins.length + 1,
-      username: newAdmin.username,
+    const newAdmin = {
+      id: Date.now(),
+      username,
+      email,
       role: "Admin",
     };
-
-    setAdmins([...admins, newData]);
-    setAlert({ type: "success", text: "Akun admin berhasil ditambahkan!" });
-    setNewAdmin({ username: "", password: "" });
-    setShowAddModal(false);
+    setAdminList((prev) => [...prev, newAdmin]);
+    setModalType(null);
   };
 
-  // Handler: ubah password admin oleh super admin
-  const handleChangePassword = () => {
-    if (changePassword.password.length < 8) {
-      setAlert({ type: "error", text: "Password minimal 8 karakter." });
+  // === Konfirmasi Edit Password ===
+  const handleConfirmEdit = () => {
+    const { password, confirmPassword } = formData;
+    if (!password || !confirmPassword) {
+      alert("Field password tidak boleh kosong!");
       return;
     }
-
-    setAlert({ type: "success", text: "Password admin berhasil diubah!" });
-    setChangePassword({ id: "", password: "" });
-    setShowChangeModal(false);
-  };
-
-  // Handler: ubah password akun sendiri
-  const handleSelfPasswordChange = () => {
-    if (changePassword.password.length < 8) {
-      setAlert({ type: "error", text: "Password minimal 8 karakter." });
+    if (password !== confirmPassword) {
+      alert("Konfirmasi password tidak cocok!");
       return;
     }
-
-    setAlert({ type: "success", text: "Password akun Anda berhasil diubah!" });
-    setChangePassword({ id: "", password: "" });
+    alert(`Password untuk ${selectedAdmin.username} berhasil diubah.`);
+    setModalType(null);
   };
 
   return (
-    <main className="flex-1 text-black p-6 min-h-screen">
+    <div className="flex-1 bg-[#EDFFEC] p-6 min-h-screen text-gray-800">
+      <h1 className="text-2xl font-bold mb-6">Manajemen Akun</h1>
+
       <ManajemenAkunUI
-        currentUser={currentUser}
-        admins={admins}
-        alert={alert}
-        showAddModal={showAddModal}
-        setShowAddModal={setShowAddModal}
-        showChangeModal={showChangeModal}
-        setShowChangeModal={setShowChangeModal}
-        newAdmin={newAdmin}
-        setNewAdmin={setNewAdmin}
-        changePassword={changePassword}
-        setChangePassword={setChangePassword}
-        handleAddAdmin={handleAddAdmin}
-        handleChangePassword={handleChangePassword}
-        handleSelfPasswordChange={handleSelfPasswordChange}
+        superAdmin={superAdmin}
+        adminList={adminList}
+        modalType={modalType}
+        selectedAdmin={selectedAdmin}
+        formData={formData}
+        onFormChange={setFormData}
+        onAddAdmin={handleAddAdmin}
+        onEditPassword={handleEditPassword}
+        onDeleteAdmin={handleDeleteAdmin}
+        onConfirmDelete={handleConfirmDelete}
+        onConfirmAdd={handleConfirmAdd}
+        onConfirmEdit={handleConfirmEdit}
+        onCloseModal={() => setModalType(null)}
       />
-    </main>
+    </div>
   );
 }
