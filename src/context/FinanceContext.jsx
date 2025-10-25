@@ -1,3 +1,4 @@
+// ✅ FinanceContext.js (versi diperbaiki)
 import React, { createContext, useContext, useState } from "react";
 
 const FinanceContext = createContext();
@@ -17,42 +18,53 @@ export const FinanceProvider = ({ children }) => {
   ]);
   const [laporan, setLaporan] = useState([]);
 
-  // --- UTIL ---
-  const updateDashboardAndLaporan = (newInputs) => {
-    let kas = 0, jfs = 0, transfer = 0;
-    newInputs.forEach((item) => {
-      if (item.jenis === "dfod") {
-        if (item.pembayaran.toLowerCase() === "cash") {
-          kas += item.nominal; // cash masuk kas
-          jfs -= item.nominal; // potong JFS
-        } else if (item.pembayaran.toLowerCase() === "transfer") {
-          transfer += item.nominal; // transfer masuk transfer
-          jfs -= item.nominal; // potong JFS
-        }
-      } else if (item.jenis === "outgoing") {
-        // Outgoing tetap seperti lama
-        jfs -= item.nominalBersih * 0.6;
-        if (item.pembayaran === "cash") kas += item.pallet || 0;
-        else if (item.pembayaran === "transfer") transfer += item.nominalBersih || 0;
-      } else if (item.jenis === "deliveryFee") {
-        // Delivery Fee langsung menambah JFS
-        jfs += item.nominal;
-      } else if (item.jenis === "pengeluaran") {
-      // logika pengeluaran kas
-      if (item.jenisPengeluaran === "Top Up Saldo JFS") {
-        if (item.jenisPembayaran.toLowerCase() === "cash") {
-          kas -= item.nominal;
-          jfs += item.nominal;
-        } else if (item.jenisPembayaran.toLowerCase() === "transfer") {
-          transfer -= item.nominal;
-          jfs += item.nominal;
-        }
-      } else {
-        if (item.jenisPembayaran.toLowerCase() === "cash") kas -= item.nominal;
-        else if (item.jenisPembayaran.toLowerCase() === "transfer") transfer -= item.nominal;
+  // --- UPDATE DASHBOARD & LAPORAN ---
+  const updateDashboardAndLaporan = (inputs) => {
+    let kas = 0,
+      jfs = 0,
+      transfer = 0;
+
+    inputs.forEach((item) => {
+      const nominal = Number(item.nominal) || 0;
+      const nominalBersih = Number(item.nominalBersih || nominal) || 0;
+
+      switch (item.jenis) {
+        case "DFOD":
+          if (item.pembayaran?.toLowerCase() === "cash") {
+            kas += nominal;
+            jfs -= nominal;
+          } else if (item.pembayaran?.toLowerCase() === "transfer") {
+            transfer += nominal;
+            jfs -= nominal;
+          }
+          break;
+
+        case "Outgoing":
+          if (item.pembayaran?.toLowerCase() === "cash") kas += nominalBersih;
+          else if (item.pembayaran?.toLowerCase() === "transfer") transfer += nominalBersih;
+          jfs -= nominalBersih * 0.6;
+          break;
+
+        case "Delivery Fee":
+          jfs += nominal;
+          break;
+
+        case "Pengeluaran":
+          if (item.jenisPengeluaran === "Top Up Saldo JFS") {
+            if (item.jenisPembayaran?.toLowerCase() === "cash") {
+              kas -= nominal;
+              jfs += nominal;
+            } else if (item.jenisPembayaran?.toLowerCase() === "transfer") {
+              transfer -= nominal;
+              jfs += nominal;
+            }
+          } else {
+            if (item.jenisPembayaran?.toLowerCase() === "cash") kas -= nominal;
+            else if (item.jenisPembayaran?.toLowerCase() === "transfer") transfer -= nominal;
+          }
+          break;
       }
-    }
-  });
+    });
 
     setInsights([
       { title: "Kas", value: kas, bgColor: "bg-green-500" },
@@ -60,114 +72,157 @@ export const FinanceProvider = ({ children }) => {
       { title: "Transfer", value: transfer, bgColor: "bg-yellow-500" },
     ]);
 
-    // Update laporan harian (1 row)
     const tanggal = new Date().toLocaleDateString("id-ID");
     setLaporan([{ tanggal, kas, jfs, transfer }]);
   };
 
   // --- DFOD ---
   const addDfod = (dfod) => {
-    const newDfod = { ...dfod, id: Date.now(), jenis: "dfod", jenisPembayaran: dfod.pembayaran };
-    const newDfodList = [...dfodList, newDfod];
-    setDfodList(newDfodList);
-
+    const newDfod = {
+      ...dfod,
+      id: Date.now(),
+      jenis: "DFOD",
+      jenisPembayaran: dfod.pembayaran,
+      nominal: Number(dfod.nominal) || 0,
+    };
+    setDfodList((prev) => [...prev, newDfod]);
     const newAllInputs = [...allInputs, newDfod];
     setAllInputs(newAllInputs);
-
     updateDashboardAndLaporan(newAllInputs);
   };
 
   const updateDfod = (id, updatedDfod) => {
-    const newDfodList = dfodList.map((d) => (d.id === id ? { ...d, ...updatedDfod } : d));
+    const newDfodList = dfodList.map((d) =>
+      d.id === id
+        ? { ...d, ...updatedDfod, nominal: Number(updatedDfod.nominal) || d.nominal }
+        : d
+    );
     setDfodList(newDfodList);
 
     const newAllInputs = allInputs.map((item) =>
-      item.id === id && item.jenis === "dfod" ? { ...item, ...updatedDfod } : item
+      item.id === id && item.jenis === "DFOD"
+        ? { ...item, ...updatedDfod, nominal: Number(updatedDfod.nominal) || item.nominal }
+        : item
     );
     setAllInputs(newAllInputs);
-
     updateDashboardAndLaporan(newAllInputs);
   };
 
   const deleteDfod = (id) => {
-    const newDfodList = dfodList.filter((d) => d.id !== id);
-    setDfodList(newDfodList);
-
-    const newAllInputs = allInputs.filter((item) => !(item.id === id && item.jenis === "dfod"));
+    setDfodList(dfodList.filter((d) => d.id !== id));
+    const newAllInputs = allInputs.filter(
+      (item) => !(item.id === id && item.jenis === "DFOD")
+    );
     setAllInputs(newAllInputs);
-
     updateDashboardAndLaporan(newAllInputs);
   };
 
-  // --- Outgoing ---
-  const addOutgoing = ({ nominal, nominalBersih, pallet, pembayaran, tanggal }) => {
+  // --- Outgoing (✅ versi dengan potongan harga) ---
+  const addOutgoing = ({ nominal, potongan, pembayaran, tanggal, namaKaryawan, deskripsi }) => {
+    const nominalNum = Number(nominal) || 0;
+    const potonganNum = Number(potongan) || 0;
+
+    // pastikan potongan tidak melebihi nominal
+    if (potonganNum > nominalNum) {
+      alert("Potongan harga tidak boleh lebih besar dari nominal outgoing");
+      return;
+    }
+
+    const nominalBersih = nominalNum - potonganNum;
+
     const newOutgoing = {
       id: Date.now(),
-      nominal,
+      nominal: nominalNum,
+      potongan: potonganNum,
       nominalBersih,
-      pallet,
       pembayaran,
-      tanggal,
-      jenis: "outgoing",
-      jenisPembayaran: pembayaran, // tambahkan field ini
+      tanggal: tanggal || new Date().toLocaleDateString("id-ID"),
+      jenis: "Outgoing",
+      jenisPembayaran: pembayaran,
+      namaKaryawan: namaKaryawan || "-",
+      deskripsi: deskripsi || "-",
     };
 
-    const newOutgoingList = [...outgoingList, newOutgoing];
-    setOutgoingList(newOutgoingList);
-
+    setOutgoingList((prev) => [...prev, newOutgoing]);
     const newAllInputs = [...allInputs, newOutgoing];
     setAllInputs(newAllInputs);
-
     updateDashboardAndLaporan(newAllInputs);
   };
 
   const updateOutgoing = (id, updatedOutgoing) => {
+    const nominalNum = Number(updatedOutgoing.nominal) || 0;
+    const potonganNum = Number(updatedOutgoing.potongan) || 0;
+
+    if (potonganNum > nominalNum) {
+      alert("Potongan harga tidak boleh lebih besar dari nominal outgoing");
+      return;
+    }
+
+    const nominalBersih = nominalNum - potonganNum;
+
     const newOutgoingList = outgoingList.map((o) =>
-      o.id === id ? { ...o, ...updatedOutgoing } : o
+      o.id === id
+        ? {
+            ...o,
+            ...updatedOutgoing,
+            nominal: nominalNum,
+            potongan: potonganNum,
+            nominalBersih,
+          }
+        : o
     );
     setOutgoingList(newOutgoingList);
 
     const newAllInputs = allInputs.map((item) =>
-      item.id === id && item.jenis === "outgoing" ? { ...item, ...updatedOutgoing } : item
+      item.id === id && item.jenis === "Outgoing"
+        ? {
+            ...item,
+            ...updatedOutgoing,
+            nominal: nominalNum,
+            potongan: potonganNum,
+            nominalBersih,
+          }
+        : item
     );
-    setAllInputs(newAllInputs);
 
+    setAllInputs(newAllInputs);
     updateDashboardAndLaporan(newAllInputs);
   };
 
   const deleteOutgoing = (id) => {
-    const newOutgoingList = outgoingList.filter((o) => o.id !== id);
-    setOutgoingList(newOutgoingList);
-
-    const newAllInputs = allInputs.filter((item) => !(item.id === id && item.jenis === "outgoing"));
+    setOutgoingList(outgoingList.filter((o) => o.id !== id));
+    const newAllInputs = allInputs.filter(
+      (item) => !(item.id === id && item.jenis === "Outgoing")
+    );
     setAllInputs(newAllInputs);
-
     updateDashboardAndLaporan(newAllInputs);
   };
 
   // --- Delivery Fee ---
   const addDeliveryFee = (amount) => {
+    const nominal = Number(amount) || 0;
     const newFee = {
       id: Date.now(),
-      nominal: parseInt(amount),
-      jenis: "deliveryFee",
+      nominal,
+      jenis: "Delivery Fee",
       tanggal: new Date().toLocaleDateString("id-ID"),
     };
-    setDeliveryFeeList([...deliveryFeeList, newFee]);
+    setDeliveryFeeList((prev) => [...prev, newFee]);
     const newAllInputs = [...allInputs, newFee];
     setAllInputs(newAllInputs);
     updateDashboardAndLaporan(newAllInputs);
   };
 
   const updateDeliveryFee = (id, updatedAmount) => {
+    const nominal = Number(updatedAmount) || 0;
     setDeliveryFeeList(
       deliveryFeeList.map((item) =>
-        item.id === id ? { ...item, nominal: parseInt(updatedAmount) } : item
+        item.id === id ? { ...item, nominal } : item
       )
     );
     const newAllInputs = allInputs.map((item) =>
-      item.id === id && item.jenis === "deliveryFee"
-        ? { ...item, nominal: parseInt(updatedAmount) }
+      item.id === id && item.jenis === "Delivery Fee"
+        ? { ...item, nominal }
         : item
     );
     setAllInputs(newAllInputs);
@@ -176,46 +231,54 @@ export const FinanceProvider = ({ children }) => {
 
   const deleteDeliveryFee = (id) => {
     setDeliveryFeeList(deliveryFeeList.filter((item) => item.id !== id));
-    const newAllInputs = allInputs.filter((item) => !(item.id === id && item.jenis === "deliveryFee"));
+    const newAllInputs = allInputs.filter(
+      (item) => !(item.id === id && item.jenis === "Delivery Fee")
+    );
     setAllInputs(newAllInputs);
     updateDashboardAndLaporan(newAllInputs);
   };
 
-  // --- Pengeluaran Kas ---
+  // --- Pengeluaran ---
   const addPengeluaran = (data) => {
-    const newData = { ...data, id: Date.now(), jenis: "pengeluaran", jenisPengeluaran: data.jenis };
-    const newList = [newData, ...pengeluaranList];
-    setPengeluaranList(newList);
+    const nominal = Number(data.nominal) || 0;
+    const newData = {
+      ...data,
+      id: Date.now(),
+      jenis: "Pengeluaran",
+      jenisPengeluaran: data.jenis,
+      nominal,
+    };
+    setPengeluaranList((prev) => [newData, ...prev]);
 
     const newAllInputs = [...allInputs, newData];
     setAllInputs(newAllInputs);
-
     updateDashboardAndLaporan(newAllInputs);
   };
 
   const updatePengeluaran = (id, updatedData) => {
-    const newList = pengeluaranList.map((p) => (p.id === id ? { ...p, ...updatedData } : p));
+    const nominal = Number(updatedData.nominal) || 0;
+    const newList = pengeluaranList.map((p) =>
+      p.id === id ? { ...p, ...updatedData, nominal } : p
+    );
     setPengeluaranList(newList);
 
     const newAllInputs = allInputs.map((item) =>
-      item.id === id && item.jenis === "pengeluaran" ? { ...item, ...updatedData } : item
+      item.id === id && item.jenis === "Pengeluaran"
+        ? { ...item, ...updatedData, nominal }
+        : item
     );
     setAllInputs(newAllInputs);
-
     updateDashboardAndLaporan(newAllInputs);
   };
 
   const deletePengeluaran = (id) => {
-    const newList = pengeluaranList.filter((p) => p.id !== id);
-    setPengeluaranList(newList);
-
-    const newAllInputs = allInputs.filter((item) => !(item.id === id && item.jenis === "pengeluaran"));
+    setPengeluaranList(pengeluaranList.filter((p) => p.id !== id));
+    const newAllInputs = allInputs.filter(
+      (item) => !(item.id === id && item.jenis === "Pengeluaran")
+    );
     setAllInputs(newAllInputs);
-
     updateDashboardAndLaporan(newAllInputs);
   };
-
-
 
   return (
     <FinanceContext.Provider

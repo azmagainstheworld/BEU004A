@@ -5,6 +5,7 @@ import { useFinance } from "../context/FinanceContext";
 
 function InputDeliveryFee() {
   const { deliveryFeeList, addDeliveryFee, updateDeliveryFee, deleteDeliveryFee } = useFinance();
+
   const [amount, setAmount] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState({});
@@ -15,34 +16,48 @@ function InputDeliveryFee() {
     setErrors({});
   };
 
+  // Fungsi submit form
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!amount || parseInt(amount) <= 0) {
+    const numericValue = amount.replace(/\./g, "");
+    if (!numericValue || parseInt(numericValue) <= 0) {
       setErrors({ amount: "Nominal harus lebih dari 0" });
       return;
     }
 
     if (editingId) {
-      updateDeliveryFee(editingId, amount);
+      updateDeliveryFee(editingId, numericValue);
     } else {
-      addDeliveryFee(amount);
+      addDeliveryFee(numericValue);
     }
-
     resetForm();
   };
 
+  // Fungsi edit
   const handleEdit = (id) => {
     const fee = deliveryFeeList.find((item) => item.id === id);
     if (fee) {
-      setAmount(fee.nominal);
+      setAmount(parseInt(fee.nominal).toLocaleString("id-ID"));
       setEditingId(fee.id);
     }
   };
 
+  // Fungsi hapus
   const handleDelete = (id) => {
     deleteDeliveryFee(id);
     if (editingId === id) resetForm();
+  };
+
+  // Fungsi format input saat diketik
+  const handleChange = (e) => {
+    let value = e.target.value;
+    value = value.replace(/\D/g, ""); // hanya angka
+    if (value.length > 1 && value.startsWith("0")) {
+      value = value.replace(/^0+/, ""); // hapus nol depan
+    }
+    const formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    setAmount(formatted);
   };
 
   return (
@@ -55,9 +70,9 @@ function InputDeliveryFee() {
           <div className="mb-4">
             <label className="block font-semibold mb-2">Nominal Delivery Fee</label>
             <input
-              type="number"
+              type="text"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={handleChange}
               placeholder="Masukkan nominal"
               className={`w-full p-2 border rounded-lg ${errors.amount ? "border-red-500" : ""}`}
             />

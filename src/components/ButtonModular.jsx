@@ -1,6 +1,12 @@
 import React from "react";
 
-function ButtonModular({ children, onClick, type = "button", variant = "default" }) {
+function ButtonModular({
+  children,
+  onClick,
+  type = "button",
+  variant = "default",
+  disabled = false,
+}) {
   const baseStyle =
     "px-4 py-2 rounded font-medium text-base transition duration-200";
 
@@ -11,11 +17,16 @@ function ButtonModular({ children, onClick, type = "button", variant = "default"
     success: "bg-green-600 text-white hover:bg-green-700",
   };
 
+  const disabledStyle = "bg-gray-300 text-gray-500 cursor-not-allowed";
+
   return (
     <button
       type={type}
       onClick={onClick}
-      className={`${baseStyle} ${variants[variant]}`}
+      disabled={disabled}
+      className={`${baseStyle} ${
+        disabled ? disabledStyle : variants[variant]
+      }`}
     >
       {children}
     </button>

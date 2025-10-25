@@ -33,9 +33,12 @@ function InputPengeluaranKas() {
     e.preventDefault();
     if (!validate()) return;
 
+    // Hapus titik sebelum parsing ke integer
+    const cleanNominal = parseInt(nominal.replace(/\./g, "") || "0");
+
     const newData = {
       tanggal: new Date().toLocaleDateString("id-ID"),
-      nominal: parseInt(nominal),
+      nominal: cleanNominal,
       jenis,
       jenisPembayaran,
       deskripsi: (jenis === "Operasional" || jenis === "Lainnya") ? deskripsi || "-" : "-",
@@ -59,7 +62,11 @@ function InputPengeluaranKas() {
 
   const handleEdit = (pengeluaran) => {
     setEditId(pengeluaran.id);
-    setNominal(pengeluaran.nominal);
+    // format nominal ketika masuk mode edit
+    const formattedNominal = pengeluaran.nominal
+      ? pengeluaran.nominal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+      : "";
+    setNominal(formattedNominal);
     setJenis(pengeluaran.jenis);
     setJenisPembayaran(pengeluaran.jenisPembayaran);
     setDeskripsi(pengeluaran.deskripsi || "");
@@ -81,11 +88,25 @@ function InputPengeluaranKas() {
           <div>
             <label className="block font-semibold mb-2">Nominal Pengeluaran</label>
             <input
-              type="number"
+              type="text"
               value={nominal}
-              onChange={(e) => setNominal(e.target.value)}
+              onChange={(e) => {
+                let value = e.target.value;
+
+                // Hilangkan semua karakter selain digit
+                value = value.replace(/\D/g, "");
+
+                // Hapus nol di depan jika lebih dari satu digit
+                if (value.length > 1 && value.startsWith("0")) {
+                  value = value.replace(/^0+/, "");
+                }
+
+                // Format angka dengan titik ribuan
+                const formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                setNominal(formatted);
+              }}
               placeholder="Masukkan nominal pengeluaran"
-              className="w-full p-2 border rounded-lg"
+              className={`w-full p-2 border rounded-lg ${errors.nominal ? "border-red-500" : ""}`}
             />
             {errors.nominal && <p className="text-red-500 text-sm">{errors.nominal}</p>}
           </div>
@@ -162,47 +183,48 @@ function InputPengeluaranKas() {
         </form>
       </div>
 
- {/* Log Pengeluaran */}
-<div className="bg-white p-5 rounded-lg shadow-md overflow-x-auto">
-  <h3 className="text-xl font-bold mb-4">Log Pengeluaran</h3>
-  <table className="min-w-[1000px] table-auto text-center border-collapse">
-    <thead>
-      <tr className="bg-[#E1F1DD] text-black">
-        <th className="p-2 min-w-[120px]">Tanggal</th>
-        <th className="p-2 min-w-[180px]">Nominal</th>
-        <th className="p-2 min-w-[190px]">Jenis Pembayaran</th>
-        <th className="p-2 min-w-[190px]">Jenis Pengeluaran</th>
-        <th className="p-2 min-w-[180px]">Deskripsi</th>
-        <th className="p-2 min-w-[180px]">Nama Karyawan</th>
-        <th className="p-2 min-w-[140px]">Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      {pengeluaranList.length === 0 && (
-        <tr>
-          <td colSpan="7" className="p-4 italic text-gray-500">
-            Data Tidak Ditemukan
-          </td>
-        </tr>
-      )}
-      {pengeluaranList.map((p) => (
-        <tr key={p.id} className="border-b">
-          <td className="p-2">{p.tanggal}</td>
-          <td className="p-2">Rp {p.nominal.toLocaleString("id-ID")}</td>
-          <td className="p-2">{p.jenisPembayaran}</td>
-          <td className="p-2">{p.jenis}</td>
-          <td className="p-2">{p.deskripsi}</td>
-          <td className="p-2">{p.namaKaryawan}</td>
-          <td className="p-2 flex justify-center items-center gap-2">
-            <ButtonModular variant="warning" onClick={() => handleEdit(p)}>Edit</ButtonModular>
-            <ButtonModular variant="danger" onClick={() => handleDelete(p.id)}>Hapus</ButtonModular>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-
+      {/* Log Pengeluaran */}
+      <div className="bg-white p-5 rounded-lg shadow-md overflow-x-auto">
+        <h3 className="text-xl font-bold mb-4">Log Pengeluaran</h3>
+        <table className="min-w-[1000px] table-auto text-center border-collapse">
+          <thead>
+            <tr className="bg-[#E1F1DD] text-black">
+              <th className="p-2 min-w-[120px]">Tanggal</th>
+              <th className="p-2 min-w-[180px]">Nominal</th>
+              <th className="p-2 min-w-[190px]">Jenis Pembayaran</th>
+              <th className="p-2 min-w-[190px]">Jenis Pengeluaran</th>
+              <th className="p-2 min-w-[180px]">Deskripsi</th>
+              <th className="p-2 min-w-[180px]">Nama Karyawan</th>
+              <th className="p-2 min-w-[140px]">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pengeluaranList.length === 0 && (
+              <tr>
+                <td colSpan="7" className="p-4 italic text-gray-500">
+                  Data Tidak Ditemukan
+                </td>
+              </tr>
+            )}
+            {pengeluaranList.map((p) => (
+              <tr key={p.id} className="border-b">
+                <td className="p-2">{p.tanggal}</td>
+                <td className="p-2 text-green-700 font-semibold">
+                  Rp {p.nominal.toLocaleString("id-ID")}
+                </td>
+                <td className="p-2">{p.jenisPembayaran}</td>
+                <td className="p-2">{p.jenis}</td>
+                <td className="p-2">{p.deskripsi}</td>
+                <td className="p-2">{p.namaKaryawan}</td>
+                <td className="p-2 flex justify-center items-center gap-2">
+                  <ButtonModular variant="warning" onClick={() => handleEdit(p)}>Edit</ButtonModular>
+                  <ButtonModular variant="danger" onClick={() => handleDelete(p.id)}>Hapus</ButtonModular>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }

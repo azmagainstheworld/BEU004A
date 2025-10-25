@@ -12,7 +12,10 @@ export default function Presensi({ karyawanList }) {
         id: k.id,
         nama: k.nama,
         tanggal: new Date().toISOString().split("T")[0],
+        waktu: "-",
         status: "-",
+        backupStatus: "-",
+        backupWaktu: "-",
         locked: false,
         autoSaved: false,
         aksiActive: false,
@@ -30,16 +33,30 @@ export default function Presensi({ karyawanList }) {
   };
 
   const handleStatus = (id, status) => {
+    const currentTime = new Date().toLocaleTimeString("id-ID", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+
     setPresensiList((prev) =>
       prev.map((p) => {
         if (p.id === id) {
           if (!p.autoSaved) {
-            const updated = { ...p, status, locked: true, autoSaved: true, aksiActive: true };
+            const updated = {
+              ...p,
+              status,
+              waktu: currentTime,
+              locked: true,
+              autoSaved: true,
+              aksiActive: true,
+            };
             updateSummary(prev.map((x) => (x.id === id ? updated : x)));
             return updated;
           }
           if (editingId === id) {
-            const updated = { ...p, status };
+            const updated = { ...p, status, waktu: currentTime };
             updateSummary(prev.map((x) => (x.id === id ? updated : x)));
             return updated;
           }
@@ -52,13 +69,43 @@ export default function Presensi({ karyawanList }) {
   const handleEdit = (id) => {
     setEditingId(id);
     setPresensiList((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, locked: false } : p))
+      prev.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              locked: false,
+              backupStatus: p.status,
+              backupWaktu: p.waktu,
+            }
+          : p
+      )
     );
   };
 
   const handleSave = (id) => {
     setPresensiList((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, locked: true, autoSaved: true } : p))
+      prev.map((p) =>
+        p.id === id
+          ? { ...p, locked: true, autoSaved: true }
+          : p
+      )
+    );
+    setEditingId(null);
+  };
+
+  const handleCancel = (id) => {
+    setPresensiList((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              status: p.backupStatus,
+              waktu: p.backupWaktu,
+              locked: true,
+              autoSaved: true,
+            }
+          : p
+      )
     );
     setEditingId(null);
   };
@@ -70,25 +117,19 @@ export default function Presensi({ karyawanList }) {
 
       {/* Summary Card Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Jumlah Karyawan */}
-        <div className="relative rounded-2xl p-6 shadow-lg transform transition duration-300 hover:scale-105 bg-yellow-200/70 backdrop-blur-md border border-yellow-300 flex flex-col items-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent animate-[pulse_3s_ease-in-out_infinite]"></div>
-          <span className="relative text-gray-700 font-semibold">Jumlah Karyawan</span>
-          <span className="relative text-3xl font-bold text-gray-800">{summary.total}</span>
+        <div className="relative rounded-2xl p-6 shadow-md transform transition duration-300 hover:scale-105 bg-white border border-gray-200 flex flex-col items-center">
+          <span className="text-gray-700 font-semibold">Jumlah Karyawan</span>
+          <span className="text-3xl font-bold text-gray-800">{summary.total}</span>
         </div>
 
-        {/* Hadir */}
-        <div className="relative rounded-2xl p-6 shadow-lg transform transition duration-300 hover:scale-105 bg-[#6FCF97]/70 backdrop-blur-md border border-[#6FCF97] flex flex-col items-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent animate-[pulse_3s_ease-in-out_infinite]"></div>
-          <span className="relative text-gray-700 font-semibold">Hadir</span>
-          <span className="relative text-3xl font-bold text-gray-800">{summary.hadir}</span>
+        <div className="relative rounded-2xl p-6 shadow-md transform transition duration-300 hover:scale-105 bg-white border border-gray-200 flex flex-col items-center">
+          <span className="text-gray-700 font-semibold">Hadir</span>
+          <span className="text-3xl font-bold text-gray-800">{summary.hadir}</span>
         </div>
 
-        {/* Tidak Hadir */}
-        <div className="relative rounded-2xl p-6 shadow-lg transform transition duration-300 hover:scale-105 bg-red-200/70 backdrop-blur-md border border-red-300 flex flex-col items-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-white/10 to-transparent animate-[pulse_3s_ease-in-out_infinite]"></div>
-          <span className="relative text-gray-700 font-semibold">Tidak Hadir</span>
-          <span className="relative text-3xl font-bold text-gray-800">{summary.tidak}</span>
+        <div className="relative rounded-2xl p-6 shadow-md transform transition duration-300 hover:scale-105 bg-white border border-gray-200 flex flex-col items-center">
+          <span className="text-gray-700 font-semibold">Tidak Hadir</span>
+          <span className="text-3xl font-bold text-gray-800">{summary.tidak}</span>
         </div>
       </div>
 
@@ -100,6 +141,7 @@ export default function Presensi({ karyawanList }) {
               <th className="p-2 min-w-[60px] text-center">No</th>
               <th className="p-2 min-w-[300px] text-center whitespace-nowrap">Nama Karyawan</th>
               <th className="p-2 min-w-[200px] text-center whitespace-nowrap">Tanggal Presensi</th>
+              <th className="p-2 min-w-[200px] text-center whitespace-nowrap">Waktu</th>
               <th className="p-2 min-w-[320px] text-center whitespace-nowrap">Kehadiran</th>
               <th className="p-2 min-w-[300px] text-center whitespace-nowrap">Keterangan</th>
               <th className="p-2 min-w-[320px] text-center whitespace-nowrap">Aksi</th>
@@ -108,7 +150,7 @@ export default function Presensi({ karyawanList }) {
           <tbody>
             {presensiList.length === 0 && (
               <tr>
-                <td colSpan="6" className="text-center py-4 text-gray-500">
+                <td colSpan="7" className="text-center py-4 text-gray-500">
                   Belum ada data presensi
                 </td>
               </tr>
@@ -118,42 +160,53 @@ export default function Presensi({ karyawanList }) {
                 <td className="text-center">{idx + 1}</td>
                 <td className="whitespace-nowrap">{p.nama}</td>
                 <td className="text-center">{p.tanggal}</td>
+                <td className="text-center">{p.waktu}</td>
                 <td className="text-center flex justify-center gap-2 p-2">
                   <ButtonModular
                     variant="success"
                     disabled={p.locked}
-                    className={`px-6 py-2 ${p.locked ? "bg-gray-400 border-gray-400" : ""}`}
                     onClick={() => handleStatus(p.id, "Hadir")}
                   >
                     Hadir
                   </ButtonModular>
+
                   <ButtonModular
                     variant="danger"
                     disabled={p.locked}
-                    className={`px-6 py-2 ${p.locked ? "bg-gray-400 border-gray-400" : ""}`}
                     onClick={() => handleStatus(p.id, "Tidak Hadir")}
                   >
                     Tidak Hadir
                   </ButtonModular>
                 </td>
+
                 <td className="text-center">{p.status !== "-" ? p.status : ""}</td>
+
                 <td className="flex justify-center gap-2 p-2">
-                  <ButtonModular
-                    variant="warning"
-                    onClick={() => handleEdit(p.id)}
-                    disabled={!p.aksiActive}
-                    className={`px-6 py-2 ${!p.aksiActive ? "bg-gray-400 border-gray-400" : ""}`}
-                  >
-                    Edit
-                  </ButtonModular>
-                  <ButtonModular
-                    variant="success"
-                    onClick={() => handleSave(p.id)}
-                    disabled={!p.aksiActive || p.locked}
-                    className={`px-6 py-2 ${!p.aksiActive || p.locked ? "bg-gray-400 border-gray-400" : ""}`}
-                  >
-                    Simpan
-                  </ButtonModular>
+                  {!editingId || editingId !== p.id ? (
+                    <ButtonModular
+                      variant="warning"
+                      onClick={() => handleEdit(p.id)}
+                      disabled={!p.aksiActive}
+                    >
+                      Edit
+                    </ButtonModular>
+                  ) : (
+                    <>
+                      <ButtonModular
+                        variant="success"
+                        onClick={() => handleSave(p.id)}
+                      >
+                        Simpan
+                      </ButtonModular>
+
+                      <ButtonModular
+                        variant="danger"
+                        onClick={() => handleCancel(p.id)}
+                      >
+                        Batal
+                      </ButtonModular>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

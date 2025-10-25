@@ -10,23 +10,31 @@ function InputDeliveryFee() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    let newErrors = {};
-    if (amount === "") {
-      newErrors.amount = "Harap mengisi nominal terlebih dahulu";
-    } else if (isNaN(amount)) {
-      newErrors.amount = "Nominal harus berupa angka!";
-    }
+    // Hilangkan titik ribuan untuk ambil angka murni
+    const numericValue = Number(amount.replace(/\./g, ""));
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    // Validasi input
+    if (!amount || isNaN(numericValue)) {
+      setErrors({ amount: "Nominal harus diisi dengan angka" });
+      return;
+    }
+    if (!Number.isInteger(numericValue)) {
+      setErrors({ amount: "Nominal harus berupa bilangan bulat" });
+      return;
+    }
+    if (numericValue <= 0) {
+      setErrors({ amount: "Nominal harus lebih dari 0" });
       return;
     }
 
     setErrors({});
+
     if (editingId) {
       setDeliveryFeeList(
         deliveryFeeList.map((item) =>
-          item.id === editingId ? { ...item, amount } : item
+          item.id === editingId
+            ? { ...item, amount: numericValue }
+            : item
         )
       );
       setEditingId(null);
@@ -34,7 +42,7 @@ function InputDeliveryFee() {
       const newData = {
         id: Date.now(),
         date: new Date().toLocaleDateString("id-ID"),
-        amount,
+        amount: numericValue,
       };
       setDeliveryFeeList([newData, ...deliveryFeeList]);
     }
@@ -45,13 +53,20 @@ function InputDeliveryFee() {
   const handleEdit = (id) => {
     const toEdit = deliveryFeeList.find((item) => item.id === id);
     if (toEdit) {
-      setAmount(toEdit.amount);
+      const formatted = toEdit.amount
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      setAmount(formatted);
       setEditingId(id);
     }
   };
 
   const handleDelete = (id) => {
     setDeliveryFeeList(deliveryFeeList.filter((item) => item.id !== id));
+    if (editingId === id) {
+      setEditingId(null);
+      setAmount("");
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+// components/InputDfod.jsx
 import React, { useState } from "react";
 import { useFinance } from "../context/FinanceContext";
 import Button from "./Button"; 
@@ -5,7 +6,6 @@ import ButtonModular from "./ButtonModular";
 
 function InputDfod() {
   const { dfodList, addDfod, updateDfod, deleteDfod } = useFinance();
-
   const [nominal, setNominal] = useState("");
   const [pembayaran, setPembayaran] = useState("");
   const [editId, setEditId] = useState(null);
@@ -15,7 +15,11 @@ function InputDfod() {
     e.preventDefault();
     const newErrors = {};
 
-    if (!nominal || isNaN(nominal) || Number(nominal) <= 0) newErrors.nominal = "Nominal DFOD wajib diisi dan angka > 0";
+    // Hapus titik dari format ribuan sebelum validasi
+    const numericValue = nominal.replace(/\./g, "");
+
+    if (!numericValue || isNaN(numericValue) || Number(numericValue) <= 0)
+      newErrors.nominal = "Nominal harus lebih dari 0";
     if (!pembayaran) newErrors.pembayaran = "Jenis Pembayaran wajib dipilih";
 
     if (Object.keys(newErrors).length > 0) {
@@ -24,7 +28,7 @@ function InputDfod() {
     }
 
     const dfodData = {
-      nominal: Number(nominal),
+      nominal: Number(numericValue),
       pembayaran: pembayaran.toLowerCase(),
       tanggal: new Date().toLocaleDateString("id-ID"),
     };
@@ -43,8 +47,23 @@ function InputDfod() {
 
   const handleEdit = (dfod) => {
     setEditId(dfod.id);
-    setNominal(dfod.nominal);
+    // tampilkan kembali dengan format ribuan
+    setNominal(dfod.nominal.toLocaleString("id-ID"));
     setPembayaran(dfod.pembayaran);
+  };
+
+  // Format input nominal setiap diketik
+  const handleNominalChange = (e) => {
+    let value = e.target.value;
+    // Hanya angka
+    value = value.replace(/\D/g, "");
+    // Hapus nol depan
+    if (value.length > 1 && value.startsWith("0")) {
+      value = value.replace(/^0+/, "");
+    }
+    // Format ribuan pakai titik
+    const formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    setNominal(formatted);
   };
 
   return (
@@ -56,11 +75,11 @@ function InputDfod() {
           <div className="mb-4">
             <label className="block font-semibold mb-2">Nominal DFOD</label>
             <input
-              type="number"
+              type="text"
               value={nominal}
-              onChange={(e) => setNominal(e.target.value)}
+              onChange={handleNominalChange}
               placeholder="Masukkan nominal DFOD"
-              className="w-full p-2 border rounded-lg"
+              className={`w-full p-2 border rounded-lg ${errors.nominal ? "border-red-500" : ""}`}
             />
             {errors.nominal && (
               <p className="text-red-500 text-sm mt-1">{errors.nominal}</p>
@@ -72,7 +91,7 @@ function InputDfod() {
             <select
               value={pembayaran}
               onChange={(e) => setPembayaran(e.target.value)}
-              className="w-full p-2 border rounded-lg"
+              className={`w-full p-2 border rounded-lg ${errors.pembayaran ? "border-red-500" : ""}`}
             >
               <option value="">-- Pilih Jenis Pembayaran --</option>
               <option value="cash">Cash</option>
@@ -104,8 +123,10 @@ function InputDfod() {
             {dfodList.map((dfod) => (
               <tr key={dfod.id} className="border-b">
                 <td className="p-2">{dfod.tanggal}</td>
-                <td className="p-2">Rp {dfod.nominal.toLocaleString("id-ID")}</td>
-                <td className="p-2">{dfod.pembayaran}</td>
+                <td className="p-2 text-green-600 font-semibold">
+                  Rp {dfod.nominal.toLocaleString("id-ID")}
+                </td>
+                <td className="p-2 capitalize">{dfod.pembayaran}</td>
                 <td className="p-2 flex justify-center gap-2">
                   <ButtonModular variant="warning" onClick={() => handleEdit(dfod)}>
                     Edit
