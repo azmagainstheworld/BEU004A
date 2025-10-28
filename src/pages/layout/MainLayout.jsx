@@ -2,6 +2,7 @@
 import React from "react";
 import Sidebar from "../../components/Sidebar";
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 
 function MainLayout({ children }) {
   return (
@@ -12,9 +13,13 @@ function MainLayout({ children }) {
       {/* Main area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navbar />
-        <main className="flex-1 p-4 bg-[#EDFFEC] overflow-y-auto">
-          {children}
+        
+        {/* Main scrollable content + Footer*/}
+        <main className="flex-1 bg-[#EDFFEC] overflow-y-auto flex flex-col justify-between p-0">
+          <div className="flex-grow p-4">{children}</div>
+          <Footer />
         </main>
+
 
         {/* Custom scrollbar */}
         <style>{`
