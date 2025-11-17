@@ -16,6 +16,7 @@ export default function ManajemenAkunPage() {
 
   const [modalType, setModalType] = useState(null);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -23,13 +24,34 @@ export default function ManajemenAkunPage() {
     confirmPassword: "",
   });
 
-  // === Tambah Admin ===
+  const [errors, setErrors] = useState({}); // <= NEW
+  const [passwordStrength, setPasswordStrength] = useState("");
+
+  // ==================== VALIDASI PASSWORD ====================
+  const strongPasswordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+
+  const getPasswordStrength = (password) => {
+    if (password.length < 1) return "";
+    if (password.length < 8) return "Lemah";
+    if (strongPasswordRegex.test(password)) return "Kuat";
+    return "Sedang";
+  };
+
+  const handlePasswordInput = (value) => {
+    setFormData((prev) => ({ ...prev, password: value }));
+    setPasswordStrength(getPasswordStrength(value));
+  };
+
+  // ==================== TAMBAH ADMIN ====================
   const handleAddAdmin = () => {
     setFormData({ username: "", email: "", password: "", confirmPassword: "" });
+    setErrors({});
+    setPasswordStrength("");
     setModalType("add");
   };
 
-  // === Edit Password ===
+  // ==================== EDIT PASSWORD ====================
   const handleEditPassword = (admin) => {
     setSelectedAdmin(admin);
     setFormData({
@@ -38,16 +60,17 @@ export default function ManajemenAkunPage() {
       password: "",
       confirmPassword: "",
     });
+    setErrors({});
+    setPasswordStrength("");
     setModalType("edit");
   };
 
-  // === Hapus Admin ===
+  // ==================== HAPUS ADMIN ====================
   const handleDeleteAdmin = (admin) => {
     setSelectedAdmin(admin);
     setModalType("delete");
   };
 
-  // === Konfirmasi Hapus ===
   const handleConfirmDelete = () => {
     if (selectedAdmin) {
       setAdminList((prev) => prev.filter((a) => a.id !== selectedAdmin.id));
@@ -56,17 +79,31 @@ export default function ManajemenAkunPage() {
     setModalType(null);
   };
 
-  // === Konfirmasi Tambah ===
-  const handleConfirmAdd = () => {
+  // ==================== VALIDASI FORM ADD ====================
+  const validateAddForm = () => {
+    const newErrors = {};
     const { username, email, password, confirmPassword } = formData;
-    if (!username || !email || !password || !confirmPassword) {
-      alert("Semua field wajib diisi!");
-      return;
-    }
-    if (password !== confirmPassword) {
-      alert("Konfirmasi password tidak cocok!");
-      return;
-    }
+
+    if (!username.trim()) newErrors.username = "Username wajib diisi";
+    if (!email.trim()) newErrors.email = "Email wajib diisi";
+    if (!password) newErrors.password = "Password wajib diisi";
+    if (!confirmPassword) newErrors.confirmPassword = "Konfirmasi password wajib diisi";
+
+    if (password && passwordStrength === "Lemah")
+      newErrors.password = "Password terlalu lemah. Gunakan kombinasi yang kuat.";
+
+    if (password !== confirmPassword)
+      newErrors.confirmPassword = "Konfirmasi password tidak cocok";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // ==================== KONFIRMASI TAMBAH ====================
+  const handleConfirmAdd = () => {
+    if (!validateAddForm()) return;
+
+    const { username, email } = formData;
 
     const newAdmin = {
       id: Date.now(),
@@ -74,21 +111,33 @@ export default function ManajemenAkunPage() {
       email,
       role: "Admin",
     };
+
     setAdminList((prev) => [...prev, newAdmin]);
     setModalType(null);
   };
 
-  // === Konfirmasi Edit Password ===
-  const handleConfirmEdit = () => {
+  // ==================== VALIDASI EDIT PASSWORD ====================
+  const validateEditForm = () => {
+    const newErrors = {};
     const { password, confirmPassword } = formData;
-    if (!password || !confirmPassword) {
-      alert("Field password tidak boleh kosong!");
-      return;
-    }
-    if (password !== confirmPassword) {
-      alert("Konfirmasi password tidak cocok!");
-      return;
-    }
+
+    if (!password) newErrors.password = "Password wajib diisi";
+    if (!confirmPassword) newErrors.confirmPassword = "Konfirmasi wajib diisi";
+
+    if (password && passwordStrength === "Lemah")
+      newErrors.password = "Password terlalu lemah";
+
+    if (password !== confirmPassword)
+      newErrors.confirmPassword = "Konfirmasi password tidak cocok";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // ==================== KONFIRMASI EDIT ====================
+  const handleConfirmEdit = () => {
+    if (!validateEditForm()) return;
+
     alert(`Password untuk ${selectedAdmin.username} berhasil diubah.`);
     setModalType(null);
   };
@@ -103,6 +152,9 @@ export default function ManajemenAkunPage() {
         modalType={modalType}
         selectedAdmin={selectedAdmin}
         formData={formData}
+        errors={errors} // <= NEW
+        passwordStrength={passwordStrength}
+        onPasswordChange={handlePasswordInput}
         onFormChange={setFormData}
         onAddAdmin={handleAddAdmin}
         onEditPassword={handleEditPassword}

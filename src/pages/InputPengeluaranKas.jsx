@@ -1,16 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState } from "react";
 import InputPengeluaranKas from "../components/InputPengeluaranKas";
 import { useKaryawanContext } from "../context/KaryawanContext"; // pakai hook dari context

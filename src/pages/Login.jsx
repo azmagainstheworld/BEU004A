@@ -6,13 +6,13 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const handleLogin = ({ username, password }) => {
-    // Contoh login sederhana
+    // Kosong atau salah tetap return false
     if (username === "admin" && password === "12345") {
       localStorage.setItem("user", JSON.stringify({ username }));
       navigate("/dashboard");
-    } else {
-      alert("Username atau password salah!");
+      return true; // login berhasil
     }
+    return false; // login gagal
   };
 
   return <LoginComponent onSubmit={handleLogin} />;

@@ -1,9 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login({ onSubmit }) {
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+
+    const data = new FormData(e.currentTarget);
+    const username = data.get("username");
+    const password = data.get("password");
+
+    // Panggil onSubmit, tangani login gagal
+    if (onSubmit) {
+      const result = onSubmit({ username, password });
+      // Jika username/password salah atau kosong, tampilkan pesan yang sama
+      if (!result) {
+        setError("Login tidak valid, silakan coba lagi");
+      }
+    }
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
-      {/* Left - ilustrasi full cover 50% */}
+      {/* Left ilustrasi 50% */}
       <div className="hidden md:block w-1/2 h-full relative">
         <img
           src="src/assets/jnt-cargo.png"
@@ -13,10 +35,9 @@ export default function Login({ onSubmit }) {
         <div className="absolute inset-0 bg-black/25"></div>
       </div>
 
-      {/* Right - form 50% */}
+      {/* Right - form */}
       <div className="flex w-full md:w-1/2 h-full items-center justify-center bg-white">
         <div className="w-full max-w-md p-8">
-          {/* Logo atas */}
           <div className="flex flex-col items-center mb-4">
             <img
               src="src/assets/logojnt.png"
@@ -29,42 +50,29 @@ export default function Login({ onSubmit }) {
             Selamat Datang!
           </h2>
           <p className="text-sm text-gray-600 mb-6 text-center">
-            Silakan login untuk mengakses akun anda.
+            Silakan login untuk mengakses akun Anda.
           </p>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const data = new FormData(e.currentTarget);
-              onSubmit &&
-                onSubmit({
-                  username: data.get("username"),
-                  password: data.get("password"),
-                });
-            }}
-            className="space-y-4"
-          >
-            <div>
-              <label className="block text-sm font-medium mb-1">Username</label>
-              <input
-                name="username"
-                type="text"
-                placeholder="Masukkan username"
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009C4C]"
-                required
-              />
+          {/* Kotak error */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-center">
+              {error}
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Password</label>
-              <input
-                name="password"
-                type="password"
-                placeholder="Masukkan password"
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009C4C]"
-                required
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              name="username"
+              type="text"
+              placeholder="Masukkan username"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009C4C]"
+            />
+            <input
+              name="password"
+              type="password"
+              placeholder="Masukkan password"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009C4C]"
+            />
 
             <button
               type="submit"
@@ -75,8 +83,15 @@ export default function Login({ onSubmit }) {
           </form>
 
           <div className="mt-4 text-center text-sm text-gray-500">
-            <a href="#" className="underline">
-              Lupa kata sandi?
+            <a
+              href="#"
+              className="underline"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/lupa-password");
+              }}
+            >
+              Lupa password?
             </a>
           </div>
         </div>

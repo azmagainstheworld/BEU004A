@@ -7,6 +7,8 @@ import AuthLayout from "./pages/layout/AuthLayout";
 
 import Login from "./pages/Login";
 import Logout from "./pages/Logout";
+import LupaPassword from "./pages/LupaPassword";
+import ResetPassword from "./pages/ResetPassword"; 
 import Dashboard from "./pages/Dashboard";
 import GajiKaryawan from "./pages/GajiKaryawan";
 import InputDeliveryFee from "./pages/InputDeliveryFee";
@@ -32,15 +34,12 @@ function App() {
           <FinanceProvider>
             <Routes>
               {/* Auth routes */}
-              <Route
-                path="/login"
-                element={
-                  <AuthLayout>
-                    <Login />
-                  </AuthLayout>
-                }
-              />
+              <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
               <Route path="/logout" element={<Logout />} />
+
+              {/* Lupa / Reset Password */}
+              <Route path="/lupa-password" element={<AuthLayout><LupaPassword /></AuthLayout>} />
+              <Route path="/reset-password" element={<AuthLayout><ResetPassword /></AuthLayout>} /> {/* 🆕 */}
 
               {/* Main routes */}
               <Route
