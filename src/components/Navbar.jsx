@@ -69,4 +69,3 @@ function Navbar({ isOpen, setIsOpen }) {
 }
 
 export default Navbar;
-

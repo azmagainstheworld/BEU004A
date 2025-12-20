@@ -3,7 +3,15 @@ import GajiKaryawan from "../components/GajiKaryawan";
 
 function LaporanGaji() {
   const [gajiData, setGajiData] = useState([]);
-  const [daysInMonth] = useState(30);
+  
+  // LOGIKA DINAMIS: Menghitung jumlah hari dalam bulan berjalan
+  const getDaysInMonth = () => {
+    const now = new Date();
+    // Mengambil hari ke-0 dari bulan berikutnya = hari terakhir bulan ini
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  };
+
+  const [daysInMonth] = useState(getDaysInMonth()); // Sekarang otomatis 31 untuk Desember
 
   useEffect(() => {
     const fetchData = async () => {

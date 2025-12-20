@@ -11,7 +11,7 @@ import "../index.css";
 import { useFinance } from "../context/FinanceContext"; 
 
 function InputDfod() {
-  const { dfodList, addDfod, updateDfodById, deleteDfodById } = useFinance();
+  const { dfodList, addDfod, updateDfodById, deleteDfodById, fetchDfod} = useFinance();
 
   const [userRole, setUserRole] = useState(null);
   const [nominal, setNominal] = useState("");
@@ -23,7 +23,7 @@ function InputDfod() {
   const [deleteId, setDeleteId] = useState(null);
   const formRef = useRef(null);
 
-  const API_BASE = "https://beu004a-backend-production.up.railway.app/beu004a/users/dfod";
+
 
   // GET USER ROLE
   useEffect(() => {
@@ -182,19 +182,14 @@ function InputDfod() {
   };
 
   const handleDelete = async () => {
-    const token = localStorage.getItem("token");
     try {
-      const res = await fetch(`${API_BASE}/delete`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ id_input_dfod: deleteId }),
-      });
-      if (res.ok) {
-        await deleteDfodById(deleteId);
-        setPopupMessage("DFOD berhasil dihapus!");
-        setShowPopup(true);
-      }
-    } catch (err) { console.error(err); }
+      // Panggil fungsi yang ada di context saja
+      await deleteDfodById(deleteId); 
+      setPopupMessage("DFOD berhasil dihapus!");
+      setShowPopup(true);
+    } catch (err) { 
+      console.error(err); 
+    }
     setDeleteId(null);
   };
 
@@ -249,7 +244,15 @@ function InputDfod() {
         </div>
       </div>
 
-      {showPopup && <PopupSuccess message={popupMessage} onClose={async () => { setShowPopup(false); await fetchDfod(); }} />}
+      {showPopup && (
+        <PopupSuccess 
+        message={popupMessage} 
+        onClose={() => {
+          setShowPopup(false);
+          fetchDfod(); // terdefinisi dari context
+          }} 
+        />
+      )}
 
       {/* MODAL DELETE */}
       {deleteId && (
