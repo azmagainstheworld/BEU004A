@@ -29,15 +29,17 @@ export default function ManajemenKaryawanComponent() {
   // INIT DATATABLES 
   useEffect(() => {
     const tableId = "#manajemenKaryawanTable";
-    if (karyawanList.length === 0) {
-      if ($.fn.DataTable.isDataTable(tableId)) $(tableId).DataTable().clear().destroy();
-      return;
-    }
+    let table;
 
-    if ($.fn.DataTable.isDataTable(tableId)) $(tableId).DataTable().destroy();
+    // 1. Fungsi untuk inisialisasi
+    const initTable = () => {
+      // Pastikan jika ada instance lama, dihancurkan dulu sampai bersih
+      if ($.fn.DataTable.isDataTable(tableId)) {
+        $(tableId).DataTable().destroy();
+      }
 
-    const timeout = setTimeout(() => {
-      const table = $(tableId).DataTable({
+      // 2. Inisialisasi instance baru
+      table = $(tableId).DataTable({
         paging: true,
         searching: true,
         info: true,
@@ -55,19 +57,30 @@ export default function ManajemenKaryawanComponent() {
         }
       });
 
+      // Fitur highlight pencarian
       table.on("draw.dt", function () {
         const body = $(table.table().body());
         const searchValue = table.search();
         body.unhighlight();
         if (searchValue) body.highlight(searchValue);
       });
-    }, 150);
+    };
 
+    // Gunakan delay sedikit lebih lama (200ms) agar React selesai merender DOM <tbody>
+    const timeout = setTimeout(() => {
+      if (karyawanList.length > 0) {
+        initTable();
+      }
+    }, 200);
+
+    // 3. Cleanup function: Penting agar tidak terjadi memory leak
     return () => {
       clearTimeout(timeout);
-      if ($.fn.DataTable.isDataTable(tableId)) $(tableId).DataTable().destroy();
+      if ($.fn.DataTable.isDataTable(tableId)) {
+        $(tableId).DataTable().destroy();
+      }
     };
-  }, [karyawanList]);
+  }, [karyawanList]); // Menjalankan ulang setiap kali data karyawan berubah
 
   const formatDate = (dateString) => {
     if (!dateString) return "-";

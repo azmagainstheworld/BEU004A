@@ -69,11 +69,10 @@ export const KaryawanProvider = ({ children }) => {
   };
 
   // --- DELETE KARYAWAN ---
-  // DELETE KARYAWAN BENAR
   const deleteKaryawan = async (id_karyawan) => {
     try {
       await axios.put(
-        "https://beu004a-backend-production.up.railway.app/users/karyawan/delete",
+        "https://beu004a-backend-production.up.railway.app/beu004a/users/karyawan/delete",
         { id_karyawan }, // <-- body
         { headers: { Authorization: `Bearer ${token}` } } // <-- headers 
       );
