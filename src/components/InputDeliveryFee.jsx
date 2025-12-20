@@ -138,7 +138,7 @@ function InputDeliveryFee() {
         setPopupMessage("Data berhasil diupdate");
       } else {
         // Untuk tambah baru, sertakan tanggal
-        await addDeliveryFee({ nominal: parseInt(numericValue), tanggal: new Date().toISOString() });
+        await addDeliveryFee({ nominal: parseInt(numericValue) });
         setPopupMessage("Data berhasil ditambahkan");
       }
       setShowPopup(true);

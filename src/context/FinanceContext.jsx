@@ -68,7 +68,7 @@ export const FinanceProvider = ({ children }) => {
         id: item.id_log_input_dashboard,
         jenis: item.jenis,
         nominal: Number(item.nominal) || 0,
-        tanggal: new Date(item.tanggal).toLocaleDateString("id-ID"),
+        tanggal: item.tanggal,
         jenisPembayaran: item.jenis_pembayaran || "-",
         namaKaryawan: item.nama_karyawan || "-",
         deskripsi: item.deskripsi || "-",

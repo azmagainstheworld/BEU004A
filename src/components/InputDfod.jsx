@@ -161,7 +161,7 @@ function InputDfod() {
     if (newErrors.nominal || newErrors.pembayaran) return;
 
     try {
-      const dfodData = { nominal: Number(numericValue), jenis_pembayaran: pembayaran, tanggal: new Date().toISOString() };
+      const dfodData = { nominal: Number(numericValue), jenis_pembayaran: pembayaran };
       if (editId) {
         await updateDfodById(editId, dfodData);
         setPopupMessage("DFOD berhasil diupdate!");
