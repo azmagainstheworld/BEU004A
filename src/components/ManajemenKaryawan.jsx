@@ -26,61 +26,88 @@ export default function ManajemenKaryawanComponent() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // INIT DATATABLES 
   useEffect(() => {
     const tableId = "#manajemenKaryawanTable";
     let table;
 
-    // 1. Fungsi untuk inisialisasi
-    const initTable = () => {
-      // Pastikan jika ada instance lama, dihancurkan dulu sampai bersih
+    const renderTableData = () => {
       if ($.fn.DataTable.isDataTable(tableId)) {
-        $(tableId).DataTable().destroy();
-      }
+        table = $(tableId).DataTable();
+        table.clear();
 
-      // 2. Inisialisasi instance baru
-      table = $(tableId).DataTable({
-        paging: true,
-        searching: true,
-        info: true,
-        ordering: true,
-        scrollX: true,
-        autoWidth: false,
-        pageLength: 10,
-        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]],
-        dom: '<"flex justify-between items-center mb-4 gap-4"lf>rt<"flex justify-between items-center mt-4 gap-4"ip>',
-        language: {
-          search: "Cari:",
-          lengthMenu: "Tampilkan _MENU_ data",
-          info: "Data _START_ - _END_ dari _TOTAL_",
-          paginate: { next: "Next", previous: "Prev" }
+        if (karyawanList && karyawanList.length > 0) {
+          const rows = karyawanList.map((k, i) => [
+            `<div class="p-4 text-center text-slate-400 text-base">${i + 1}</div>`,
+            `<div class="p-4 text-center text-slate-700 text-base font-medium">${k.nama_karyawan}</div>`,
+            `<div class="p-4 text-center text-slate-600 text-base">${formatDate(k.ttl)}</div>`,
+            `<div class="p-4 text-center">
+              <span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                k.jenis_kelamin === 'Laki-laki' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'
+              }">${k.jenis_kelamin}</span>
+            </div>`,
+            `<div class="p-4 text-center text-slate-500 text-base max-w-xs truncate">${k.alamat}</div>`,
+            `<div class="p-4 flex justify-center gap-2">
+              <button class="btn-edit-karyawan px-5 py-2.5 rounded-lg font-semibold text-lg bg-amber-500 text-white" data-id="${k.id_karyawan}">Edit</button>
+              <button class="btn-delete-karyawan px-5 py-2.5 rounded-lg font-semibold text-lg bg-rose-500 text-white" data-id="${k.id_karyawan}">Hapus</button>
+            </div>`
+          ]);
+          table.rows.add(rows);
         }
-      });
+        table.draw(false);
+      } else {
+        // Inisialisasi awal
+        table = $(tableId).DataTable({
+          paging: true,
+          searching: true,
+          info: true,
+          ordering: true,
+          scrollX: true,
+          autoWidth: false,
+          pageLength: 10,
+          lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]],
+          dom: '<"flex justify-between items-center mb-4 gap-4"lf>rt<"flex justify-between items-center mt-4 gap-4"ip>',
+          language: {
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data",
+            info: "Data _START_ - _END_ dari _TOTAL_",
+            paginate: { next: "Next", previous: "Prev" }
+          }
+        });
 
-      // Fitur highlight pencarian
-      table.on("draw.dt", function () {
-        const body = $(table.table().body());
-        const searchValue = table.search();
-        body.unhighlight();
-        if (searchValue) body.highlight(searchValue);
-      });
+        // PINDAHKAN LOGIKA HIGHLIGHT KE DALAM SINI AGAR TABLE SUDAH TERDEFINISI
+        table.on("draw.dt", function () {
+          const body = $(table.table().body());
+          const searchValue = table.search();
+          body.unhighlight();
+          if (searchValue) body.highlight(searchValue);
+        });
+
+        renderTableData(); 
+      }
     };
 
-    // Gunakan delay sedikit lebih lama (200ms) agar React selesai merender DOM <tbody>
     const timeout = setTimeout(() => {
-      if (karyawanList.length > 0) {
-        initTable();
-      }
-    }, 200);
+      renderTableData();
 
-    // 3. Cleanup function: Penting agar tidak terjadi memory leak
+      // Event Delegation
+      $(tableId).off("click", ".btn-edit-karyawan").on("click", ".btn-edit-karyawan", function() {
+        const id = $(this).data("id");
+        handleEdit(id);
+      });
+
+      $(tableId).off("click", ".btn-delete-karyawan").on("click", ".btn-delete-karyawan", function() {
+        const id = $(this).data("id");
+        setDeleteId(id);
+      });
+    }, 150);
+
     return () => {
       clearTimeout(timeout);
       if ($.fn.DataTable.isDataTable(tableId)) {
         $(tableId).DataTable().destroy();
       }
     };
-  }, [karyawanList]); // Menjalankan ulang setiap kali data karyawan berubah
+  }, [karyawanList]);
 
   const formatDate = (dateString) => {
     if (!dateString) return "-";
@@ -179,29 +206,7 @@ export default function ManajemenKaryawanComponent() {
                   <th className="p-4 text-center">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {karyawanList.length > 0 && karyawanList.map((k, i) => (
-                  <tr key={k.id_karyawan} className="hover:bg-slate-50 transition-colors">
-                    <td className="p-4 text-center text-slate-400 text-base">{i + 1}</td>
-                    <td className="p-4 text-center text-slate-700 text-base font-medium">{k.nama_karyawan}</td>
-                    <td className="p-4 text-center text-slate-600 text-base">{formatDate(k.ttl)}</td>
-                    <td className="p-4 text-center">
-                      <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
-                        k.jenis_kelamin === 'Laki-laki' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'
-                      }`}>
-                        {k.jenis_kelamin}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center text-slate-500 text-base max-w-xs truncate">{k.alamat}</td>
-                    <td className="p-4 text-center">
-                      <div className="flex justify-center gap-2">
-                        <ButtonModular variant="warning" onClick={() => handleEdit(k.id_karyawan)} className="px-5 py-2.5 text-lg">Edit</ButtonModular>
-                        <ButtonModular variant="danger" onClick={() => setDeleteId(k.id_karyawan)} className="px-5 py-2.5 text-lg">Hapus</ButtonModular>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+              <tbody className="divide-y divide-slate-100"></tbody>
             </table>
           </div>
         </div>
