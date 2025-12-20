@@ -32,7 +32,7 @@ export const FinanceProvider = ({ children }) => {
       );
 
       const mapped = res.data.laporan.map((item) => ({
-        tanggal: item.tanggal,
+        tanggal: item.tanggal ? item.tanggal.split('T')[0] : "-",
         kas: Number(item.Kas) || 0,
         jfs: Number(item.Saldo_JFS) || 0,
         transfer: Number(item.Transfer) || 0,
@@ -68,7 +68,7 @@ export const FinanceProvider = ({ children }) => {
         id: item.id_log_input_dashboard,
         jenis: item.jenis,
         nominal: Number(item.nominal) || 0,
-        tanggal: item.tanggal,
+        tanggal: item.tanggal ? item.tanggal.split('T')[0] : "-",
         jenisPembayaran: item.jenis_pembayaran || "-",
         namaKaryawan: item.nama_karyawan || "-",
         deskripsi: item.deskripsi || "-",

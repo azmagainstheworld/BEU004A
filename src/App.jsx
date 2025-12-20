@@ -27,6 +27,16 @@ import { FinanceProvider } from "./context/FinanceContext";
 import { KaryawanProvider } from "./context/KaryawanContext";
 import { PresensiProvider } from "./context/PresensiContext";
 
+
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
+
 function App() {
   // --- 1. LOGIKA AUTO-LOGOUT 1 JAM ---
   useEffect(() => {
@@ -86,23 +96,25 @@ function App() {
               <Route
                 path="/*"
                 element={
-                  <MainLayout>
-                    <Routes>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/input-dfod" element={<InputDfod />} />
-                      <Route path="/input-outgoing" element={<InputOutgoing />} />
-                      <Route path="/input-delivery-fee" element={<InputDeliveryFee />} />
-                      <Route path="/input-pengeluaran-kas" element={<InputPengeluaranKas />} />
-                      <Route path="/laporan-keuangan" element={<LaporanKeuangan />} />
-                      <Route path="/presensi" element={<Presensi />} />
-                      <Route path="/gaji-karyawan" element={<GajiKaryawan />} />
-                      <Route path="/manajemen-gaji" element={<ManajemenGaji />} />
-                      <Route path="/manajemen-karyawan" element={<ManajemenKaryawan />} />
-                      <Route path="/manajemen-akun" element={<ManajemenAkun />} />
-                      <Route path="/trash" element={<TrashGlobal />} />
-                      <Route path="*" element={<Navigate to="/login" replace />} />
-                    </Routes>
-                  </MainLayout>
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Routes>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/input-dfod" element={<InputDfod />} />
+                        <Route path="/input-outgoing" element={<InputOutgoing />} />
+                        <Route path="/input-delivery-fee" element={<InputDeliveryFee />} />
+                        <Route path="/input-pengeluaran-kas" element={<InputPengeluaranKas />} />
+                        <Route path="/laporan-keuangan" element={<LaporanKeuangan />} />
+                        <Route path="/presensi" element={<Presensi />} />
+                        <Route path="/gaji-karyawan" element={<GajiKaryawan />} />
+                        <Route path="/manajemen-gaji" element={<ManajemenGaji />} />
+                        <Route path="/manajemen-karyawan" element={<ManajemenKaryawan />} />
+                        <Route path="/manajemen-akun" element={<ManajemenAkun />} />
+                        <Route path="/trash" element={<TrashGlobal />} />
+                        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                      </Routes>
+                    </MainLayout>
+                  </ProtectedRoute>
                 }
               />
             </Routes>
