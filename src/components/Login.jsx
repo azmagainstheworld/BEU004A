@@ -18,7 +18,7 @@ export default function Login({ onLogin, error, loading, onForgotPassword }) {
       <div 
         className="absolute inset-0 z-0 scale-100 transition-all duration-700"
         style={{
-          backgroundImage: "url('src/assets/jnt-cargo.png')", 
+          backgroundImage: "url('https://ik.imagekit.io/gunnams/Photobooth/jnt-cargo.png')", 
           backgroundSize: "cover",
           backgroundPosition: "center",
           filter: "brightness(0.4)" 
