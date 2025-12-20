@@ -111,7 +111,7 @@ function App() {
                         <Route path="/manajemen-karyawan" element={<ManajemenKaryawan />} />
                         <Route path="/manajemen-akun" element={<ManajemenAkun />} />
                         <Route path="/trash" element={<TrashGlobal />} />
-                        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                        <Route path="*" element={<Navigate to="/login" replace />} />
                       </Routes>
                     </MainLayout>
                   </ProtectedRoute>
