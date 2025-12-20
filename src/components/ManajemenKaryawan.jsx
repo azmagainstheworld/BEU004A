@@ -70,7 +70,9 @@ export default function ManajemenKaryawanComponent() {
             search: "Cari:",
             lengthMenu: "Tampilkan _MENU_ data",
             info: "Data _START_ - _END_ dari _TOTAL_",
-            paginate: { next: "Next", previous: "Prev" }
+            paginate: { next: "Next", previous: "Prev" },
+            emptyTable: "<span class='italic text-slate-400 font-medium'>Data tidak ditemukan</span>",
+            zeroRecords: "<span class='italic text-slate-400 font-medium'>Data tidak ditemukan</span>"
           }
         });
 

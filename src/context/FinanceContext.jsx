@@ -202,14 +202,23 @@ export const FinanceProvider = ({ children }) => {
   const deleteInput = async (endpoint, id) => {
     if (!token) return;
     try {
-      await axios.put(
-        `https://beu004a-backend-production.up.railway.app/beu004a/users/${endpoint}/${id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Alamat URL dibuat statis sesuai router backend: .../users/dfod/delete
+      const url = `https://beu004a-backend-production.up.railway.app/beu004a/users/${endpoint}/delete`;
+      
+      // ID dikirim di dalam objek body (parameter kedua axios.put)
+      const body = { 
+        [`id_input_${endpoint}`]: id 
+      };
+
+      await axios.put(url, body, { 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+
       await fetchLaporanKeuangan();
       await fetchTodayInputs();
     } catch (err) {
       console.error(`Error deleting ${endpoint}:`, err);
+      throw err;
     }
   };
 

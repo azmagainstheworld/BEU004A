@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useKaryawan } from "../context/KaryawanContext";
 import ButtonModular from "../components/ButtonModular";
 import jwt_decode from "jwt-decode";
 import PopupSuccess from "../components/PopupSuccess";
@@ -55,6 +56,7 @@ const MODULE_CONFIG = {
 };
 
 function TrashGlobal() {
+  const { fetchKaryawan } = useKaryawan();
   const [userRole, setUserRole] = useState(null);
   const [trashData, setTrashData] = useState([]);
   const [filterModul, setFilterModul] = useState("Semua");
@@ -281,14 +283,24 @@ function TrashGlobal() {
       });
 
       if (res.ok) {
+        // 1. Refresh data di halaman Trash itu sendiri
         await fetchAllTrash();
+
+        // 2. Refresh data di Context Karyawan jika yang di-restore adalah karyawan
+        if (item.modul_sumber === "Karyawan" && actionType === "restore") {
+          await fetchKaryawan();
+        }
+
         setPopupMessage(`${item.modul_sumber} berhasil di${actionType === "restore" ? "kembalikan" : "hapus permanen"}`);
         setShowPopup(true);
       }
-    } catch (err) { console.error(err); }
-
-    setConfirmOpen(false);
-    setConfirmData(null);
+    } catch (err) {
+      console.error("Gagal melakukan aksi trash:", err);
+    } finally {
+      // Pastikan modal konfirmasi tertutup apa pun hasilnya
+      setConfirmOpen(false);
+      setConfirmData(null);
+    }
   };
 
   return (
