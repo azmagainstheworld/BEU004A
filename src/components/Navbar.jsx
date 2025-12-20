@@ -32,7 +32,7 @@ function Navbar({ isOpen, setIsOpen }) {
           </span>
 
           <img
-            src="src/assets/logojnt.png"
+            src="https://ik.imagekit.io/gunnams/Photobooth/logojnt.png"
             alt="Logo"
             className="h-12 w-12 object-contain rounded-full border border-gray-200 transition-transform duration-300 hover:scale-105"
           />
