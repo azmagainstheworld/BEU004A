@@ -202,7 +202,7 @@ export const FinanceProvider = ({ children }) => {
   const deleteInput = async (endpoint, id) => {
     if (!token) return;
     try {
-      await axios.delete(
+      await axios.put(
         `https://beu004a-backend-production.up.railway.app/beu004a/users/${endpoint}/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
