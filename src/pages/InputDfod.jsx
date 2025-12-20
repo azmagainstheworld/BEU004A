@@ -1,14 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import InputDfodComponent from "../components/InputDfod";
 
 function InputDfod() {
-  const [dfodList, setDfodList] = useState([]);
-
   return (
-    <InputDfodComponent
-      dfodList={dfodList}
-      setDfodList={setDfodList}
-    />
+    <InputDfodComponent />
   );
 }
 

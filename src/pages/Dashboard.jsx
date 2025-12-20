@@ -6,7 +6,7 @@ function Dashboard() {
   const { allInputs, insights } = useFinance(); // ambil langsung dari context
 
   return (
-    <main className="flex-1 bg-[#EDFFEC] p-6 min-h-screen">
+    <main className="flex-1 bg-[#F8FAFC] p-6 min-h-screen">
       <DashboardComponent allInputs={allInputs} insights={insights} />
     </main>
   );

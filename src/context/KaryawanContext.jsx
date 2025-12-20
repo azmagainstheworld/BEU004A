@@ -1,38 +1,113 @@
 // src/context/KaryawanContext.jsx
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const KaryawanContext = createContext();
 
 export const KaryawanProvider = ({ children }) => {
   const [karyawanList, setKaryawanList] = useState([]);
 
-  const addKaryawan = (data) => {
-    setKaryawanList((prev) => [...prev, { ...data, id: Date.now() }]);
+  const token = localStorage.getItem("token");
+
+  // --- FETCH ALL KARYAWAN ---
+  const fetchKaryawan = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get(
+        "https://beu004a-backend-production.up.railway.app/beu004a/users/karyawan",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setKaryawanList(res.data);
+    } catch (err) {
+      console.error("Fetch Karyawan Error:", err);
+    } 
   };
 
-  const updateKaryawan = (id, newData) => {
-    setKaryawanList((prev) =>
-      prev.map((k) => (k.id === id ? { ...k, ...newData } : k))
-    );
+  // --- CREATE KARYAWAN ---
+  const addKaryawan = async (data) => {
+    try {
+      const res = await axios.post(
+        "https://beu004a-backend-production.up.railway.app/beu004a/users/karyawan/create",
+        {
+          nama_karyawan: data.nama_karyawan,
+          jenis_kelamin: data.jenis_kelamin,
+          ttl: data.ttl,
+          alamat: data.alamat,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setKaryawanList((prev) => [
+        ...prev,
+        {
+          id_karyawan: res.data.id,
+          ...data,
+        },
+      ]);
+    } catch (err) {
+      console.error("Add Karyawan Error:", err);
+    }
   };
 
-  const deleteKaryawan = (id) => {
-    setKaryawanList((prev) => prev.filter((k) => k.id !== id));
+  // --- UPDATE KARYAWAN ---
+  const updateKaryawan = async (id_karyawan, newData) => {
+    try {
+      await axios.put(
+        "https://beu004a-backend-production.up.railway.app/beu004a/users/karyawan/edit",
+        { id_karyawan, ...newData },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setKaryawanList((prev) =>
+        prev.map((k) =>
+          k.id_karyawan === id_karyawan ? { ...k, ...newData } : k
+        )
+      );
+    } catch (err) {
+      console.error("Update Karyawan Error:", err);
+    }
   };
+
+  // --- DELETE KARYAWAN ---
+  // DELETE KARYAWAN BENAR
+  const deleteKaryawan = async (id_karyawan) => {
+    try {
+      await axios.put(
+        "https://beu004a-backend-production.up.railway.app/users/karyawan/delete",
+        { id_karyawan }, // <-- body
+        { headers: { Authorization: `Bearer ${token}` } } // <-- headers 
+      );
+
+      setKaryawanList((prev) =>
+        prev.filter((k) => k.id_karyawan !== id_karyawan)
+      );
+    } catch (err) {
+      console.error("Delete Karyawan Error:", err);
+    }
+  };
+
+
+  // --- FETCH KARYAWAN ON MOUNT ---
+  useEffect(() => {
+    fetchKaryawan();
+  }, [token]);
 
   return (
     <KaryawanContext.Provider
-      value={{ karyawanList, setKaryawanList, addKaryawan, updateKaryawan, deleteKaryawan }}
+      value={{
+        karyawanList,
+        fetchKaryawan,
+        addKaryawan,
+        updateKaryawan,
+        deleteKaryawan,
+      }}
     >
       {children}
     </KaryawanContext.Provider>
   );
 };
 
-// hook utama
 export const useKaryawan = () => useContext(KaryawanContext);
-
-// alias supaya kompatibel (biar PresensiContext nggak error lagi)
 export const useKaryawanContext = () => useContext(KaryawanContext);
 
 export default KaryawanContext;

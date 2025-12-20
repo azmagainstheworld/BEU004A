@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import LaporanKeuanganComponent from "../components/LaporanKeuangan";
+import { useFinance } from "../context/FinanceContext";
 
 function LaporanKeuangan() {
-  // contoh data dummy (nanti bisa diisi dari input lain)
-  const [laporan] = useState([
-    { tanggal: "25/09/2025", kas: 200000, jfs: 500000, transfer: 300000 },
-    { tanggal: "24/09/2025", kas: 150000, jfs: 300000, transfer: 200000 },
-  ]);
+  const { fetchLaporanKeuangan } = useFinance();
 
-  return <LaporanKeuanganComponent laporan={laporan} />;
+  // Auto fetch saat halaman dibuka
+  useEffect(() => {
+    fetchLaporanKeuangan();
+  }, []);
+
+  return <LaporanKeuanganComponent />;
 }
 
 export default LaporanKeuangan;

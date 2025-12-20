@@ -1,81 +1,114 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import ResetPasswordForm from "../components/ResetPasswordForm";
 
 export default function ResetPassword() {
+  const navigate = useNavigate();
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [tokenValid, setTokenValid] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState("");
 
+  const token = new URLSearchParams(window.location.search).get("token");
+
+  useEffect(() => {
+    const checkToken = async () => {
+      if (!token) {
+        setError("Token tidak ditemukan pada URL.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://beu004a-backend-production.up.railway.app/beu004a/auth/check-reset-token?token=${token}`
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+          setError(data.message || "Token invalid atau sudah kedaluwarsa.");
+          setTokenValid(false);
+          setTimeout(() => navigate("/login"), 2500);
+        } else {
+          setTokenValid(true);
+        }
+      } catch (err) {
+        setError("Gagal memverifikasi token.");
+      }
+      setLoading(false);
+    };
+
+    checkToken();
+  }, [token, navigate]);
+
+  // Logika kekuatan password asli Anda
+  const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+
+  const handlePasswordChange = (value) => {
+    setPassword(value);
+    if (!value) setPasswordStrength("");
+    else if (value.length < 8) setPasswordStrength("Lemah");
+    else if (strongPasswordRegex.test(value)) setPasswordStrength("Kuat");
+    else setPasswordStrength("Sedang");
+  };
+
+  // Logika submit data asli Anda
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
     if (!password || !confirmPassword) {
-      setError("Password dan konfirmasi harus diisi");
+      setError("Password dan konfirmasi wajib diisi.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Password dan konfirmasi tidak sama");
+      setError("Password dan konfirmasi tidak cocok.");
       return;
     }
 
     try {
-      // Ambil token dari query string
-      const token = new URLSearchParams(window.location.search).get("token");
-
-      // Request ke backend untuk reset password
-      const response = await fetch("http://localhost:5000/beu004a/auth/reset-password", {
+      const response = await fetch("https://beu004a-backend-production.up.railway.app/beu004a/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password, token }),
+        body: JSON.stringify({
+          token,
+          newPassword: password,
+          confirmPassword,
+        }),
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Terjadi kesalahan");
 
-      setSuccess("Password berhasil diubah. Silakan login kembali.");
-      setPassword("");
-      setConfirmPassword("");
+      if (!response.ok) {
+        setError(data.message || "Gagal mengubah password.");
+        return;
+      }
+
+      setSuccess("Password berhasil diubah. Mengarahkan ke login...");
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
-      setError(err.message || "Terjadi kesalahan");
+      setError("Terjadi kesalahan server.");
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="w-full max-w-md p-6 bg-white rounded-xl shadow-md space-y-4">
-        <h2 className="text-2xl font-bold text-center text-green-900">Reset Password</h2>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        {success && <p className="text-green-600 text-sm">{success}</p>}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="password"
-            placeholder="Password Baru"
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009C4C]"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Konfirmasi Password Baru"
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009C4C]"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-[#009C4C] hover:bg-[#007a38] text-white font-semibold py-2 rounded-lg transition"
-          >
-            Reset Password
-          </button>
-        </form>
-      </div>
-    </div>
+    <ResetPasswordForm
+      password={password}
+      confirmPassword={confirmPassword}
+      setConfirmPassword={setConfirmPassword}
+      handlePasswordChange={handlePasswordChange}
+      handleSubmit={handleSubmit}
+      error={error}
+      success={success}
+      loading={loading}
+      tokenValid={tokenValid}
+      passwordStrength={passwordStrength}
+    />
   );
 }

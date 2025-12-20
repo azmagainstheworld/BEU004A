@@ -25,8 +25,8 @@ function Navbar({ isOpen, setIsOpen }) {
         {/* Logo dan Nama di kanan */}
         <div className="flex items-center gap-3 ml-auto">
           <span
-            className="text-lg font-bold text-[#006400]"
-            style={{ fontFamily: "Arial, sans-serif" }}
+            className="text-lg font-bold text-white"
+            style={{ fontFamily: "Roboto, sans-serif" }}
           >
             J&amp;T Cargo Mitra BEU004A
           </span>
@@ -45,7 +45,7 @@ function Navbar({ isOpen, setIsOpen }) {
           background: linear-gradient(
             90deg,
             rgba(255, 255, 255, 0.85),
-            rgba(200, 255, 200, 0.2)
+            rgba(0, 100, 0, 0.95)
           );
           backdrop-filter: blur(12px);
           box-shadow: 0 2px 15px rgba(0,0,0,0.08);

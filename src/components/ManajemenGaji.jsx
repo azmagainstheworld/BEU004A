@@ -1,209 +1,207 @@
 import React, { useState, useEffect } from "react";
 import ButtonModular from "./ButtonModular";
+import PopupSuccess from "./PopupSuccess";
+import $ from "jquery";
+import "datatables.net-dt";
+import "jquery-highlight/jquery.highlight.js";
+import "datatables.net-dt/css/dataTables.dataTables.css";
+import "../index.css";
+
+const formatRupiah = (value) => {
+  if (value === null || value === undefined || value === "") return "Rp 0";
+  const number = Number(String(value).replace(/\D/g, "")) || 0;
+  return "Rp " + number.toLocaleString("id-ID");
+};
+
+const formatInputRibuan = (value) => {
+  if (value === null || value === undefined) return "";
+  const onlyNumbers = String(value).replace(/\D/g, "");
+  return onlyNumbers.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+const parseNumber = (value) => (value ? value.replace(/\./g, "") : "");
 
 const ManajemenGaji = ({
-  karyawanList = [],
-  manajemenGaji = [],
-  setManajemenGaji,
-  isLocked,
-  setIsLocked,
+  karyawanList,
+  manajemenGaji,
+  tempData,
+  editingRow,
+  errors,
+  onChange,
+  onEdit,
+  onSave,
+  onCancel
 }) => {
-  const [tempData, setTempData] = useState({});
-  const [editingRow, setEditingRow] = useState(null);
-  const [errors, setErrors] = useState({});
+  const [showPopup, setShowPopup] = useState(false);
+  const [localInput, setLocalInput] = useState({});
 
-  // ambil nilai input
-  const getInputValue = (item, field) => {
-    const id = item.idKaryawan;
-    if (tempData[id] && tempData[id][field] !== undefined) {
-      return tempData[id][field];
-    }
-    // default kosong → placeholder yang muncul
-    return "";
-  };
-
-  const handleInputChange = (idKaryawan, field, value) => {
-    setTempData((prev) => ({
-      ...prev,
-      [idKaryawan]: {
-        ...prev[idKaryawan],
-        [field]: value,
-      },
-    }));
-    setErrors((prev) => {
-      const copy = { ...prev };
-      delete copy[idKaryawan];
-      return copy;
-    });
-  };
-
-  // klik SIMPAN (isLocked = true dari Pages)
   useEffect(() => {
-    if (!isLocked) return;
-
-    const newErrors = {};
-    let hasError = false;
-
-    const updated = manajemenGaji.map((g) => {
-      const id = g.idKaryawan;
-      const temp = tempData[id] || {};
-
-      // UPH WAJIB
-      const rawUpah = temp.upahPerHari ?? g.upahPerHari ?? "";
-      const upahNum = rawUpah === "" ? NaN : Number(rawUpah);
-
-      if (rawUpah === "" || Number.isNaN(upahNum) || upahNum <= 0) {
-        newErrors[id] = "Upah per hari wajib diisi";
-        hasError = true;
-        return g;
+    const newLocal = {};
+    manajemenGaji.forEach(({ id_karyawan }) => {
+      if (editingRow[id_karyawan]) {
+        newLocal[id_karyawan] = {
+          upah_perhari: formatInputRibuan(tempData[id_karyawan]?.upah_perhari ?? ""),
+          bonus: formatInputRibuan(tempData[id_karyawan]?.bonus ?? ""),
+        };
       }
-
-      // Bonus optional → kalau kosong simpan 0
-      const rawBonus = temp.bonus ?? g.bonus ?? "";
-      const bonusNum = rawBonus === "" ? 0 : Number(rawBonus);
-
-      return {
-        ...g,
-        upahPerHari: Number(upahNum),
-        bonus: Number(bonusNum),
-      };
     });
+    setLocalInput(newLocal);
+  }, [editingRow, manajemenGaji, tempData]);
 
-    if (hasError) {
-      setErrors(newErrors);
-      setIsLocked(false);
+  useEffect(() => {
+    const tableId = "#manajemenGajiTable";
+    if (manajemenGaji.length === 0) {
+      if ($.fn.DataTable.isDataTable(tableId)) $(tableId).DataTable().clear().destroy();
+      return;
+    }
+    if ($.fn.DataTable.isDataTable(tableId)) $(tableId).DataTable().destroy();
+
+    const timeout = setTimeout(() => {
+      const table = $(tableId).DataTable({
+        paging: true,
+        searching: true,
+        info: true,
+        ordering: true,
+        scrollX: true,
+        autoWidth: false,
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Semua"]],
+        dom: '<"flex justify-between items-center mb-4 gap-4"lf>rt<"flex justify-between items-center mt-4 gap-4"ip>',
+        language: {
+          search: "Cari:",
+          lengthMenu: "Tampilkan _MENU_ data",
+          info: "Data _START_ - _END_ dari _TOTAL_",
+          paginate: { next: "Next", previous: "Prev" }
+        }
+      });
+      table.on("draw.dt", function () {
+        const body = $(table.table().body());
+        const searchValue = table.search();
+        body.unhighlight();
+        if (searchValue) body.highlight(searchValue);
+      });
+    }, 150);
+
+    return () => {
+      clearTimeout(timeout);
+      if ($.fn.DataTable.isDataTable(tableId)) $(tableId).DataTable().destroy();
+    };
+  }, [manajemenGaji]);
+
+  const handleInputChange = (id, field, value) => {
+    const formatted = formatInputRibuan(value);
+    setLocalInput((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], [field]: formatted },
+    }));
+    onChange(id, field, parseNumber(formatted));
+  };
+
+  const handleSave = async (id) => {
+    // 1. Cek validasi lokal sebelum memanggil onSave
+    if (errors[id]) {
+      console.warn("Simpan dibatalkan: Terdapat error validasi pada ID", id);
       return;
     }
 
-    // simpan data terbaru
-    setManajemenGaji(updated);
-    setTempData({});
-    setErrors({});
-    setEditingRow(null);
-  }, [isLocked]); // eslint-disable-line react-hooks/exhaustive-deps
+    const upah = tempData[id]?.upah_perhari;
+    if (!upah || String(upah).trim() === "") {
+      console.warn("Simpan dibatalkan: Upah kosong");
+      return;
+    }
 
-  const handleRowEdit = (idKaryawan) => {
-    setEditingRow(idKaryawan);
-    const current =
-      manajemenGaji.find((m) => m.idKaryawan === idKaryawan) || {};
-    setTempData((prev) => ({
-      ...prev,
-      [idKaryawan]: {
-        upahPerHari: current.upahPerHari ?? "",
-        bonus: current.bonus ?? "",
-      },
-    }));
-  };
+    // 2. Jalankan fungsi simpan dari parent
+    // Pastikan fungsi onSave di parent mengembalikan 'true' jika API berhasil
+    const result = await onSave(id);
 
-  const handleRowCancel = (idKaryawan) => {
-    setTempData((prev) => {
-      const copy = { ...prev };
-      delete copy[idKaryawan];
-      return copy;
-    });
-    setErrors((prev) => {
-      const copy = { ...prev };
-      delete copy[idKaryawan];
-      return copy;
-    });
-    setEditingRow(null);
+    // 3. Popup muncul HANYA jika validasi lolos dan proses simpan sukses
+    if (result === true) {
+      setShowPopup(true);
+    }
   };
 
   return (
-    <div className="bg-white p-5 rounded-lg shadow-md overflow-x-auto">
-      <table className="w-full min-w-[800px] table-auto text-center border-collapse">
-        <thead>
-          <tr className="bg-[#E1F1DD] text-black">
-            <th className="p-2 w-64 text-left">Nama Karyawan</th>
-            <th className="p-2 w-48">Upah per Hari</th>
-            <th className="p-2 w-48">Bonus</th>
-            <th className="p-2 w-48">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {manajemenGaji.length > 0 ? (
-            manajemenGaji.map((item) => {
-              const id = item.idKaryawan;
-              const namaKaryawan =
-                karyawanList.find((k) => k.id === id)?.nama ||
-                "Belum ada data";
-
-              const isEditing = editingRow === id || !isLocked;
-
+    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-100">
+      <h3 className="text-xl font-bold mb-6 text-slate-800">Daftar Gaji Karyawan</h3>
+      <div className="overflow-x-auto">
+        <table id="manajemenGajiTable" className="w-full border-collapse display nowrap">
+          <thead>
+            <tr className="bg-slate-50 text-slate-600 uppercase text-[13px] font-bold tracking-widest border-b border-slate-200">
+              <th className="p-4 text-center">Nama Karyawan</th>
+              <th className="p-4 text-center">Upah per Hari</th>
+              <th className="p-4 text-center">Bonus</th>
+              <th className="p-4 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {manajemenGaji.map((item) => {
+              const id = item.id_karyawan;
+              const karyawan = karyawanList.find((k) => k.id_karyawan === id);
+              const isEditing = editingRow[id] === true;
               return (
-                <tr key={id} className="border-b">
-                  <td className="p-2 text-left">{namaKaryawan}</td>
-
-                  {/* Upah */}
-                  <td className="p-2 relative">
+                <tr key={id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 text-slate-700 text-base font-medium text-center">{karyawan?.nama_karyawan}</td>
+                  <td className="p-4 text-center relative">
                     {isEditing ? (
-                      <>
+                      <div className="max-w-[200px] mx-auto">
                         <input
-                          type="number"
-                          placeholder="Isi upah"
-                          value={getInputValue(item, "upahPerHari")}
-                          onChange={(e) =>
-                            handleInputChange(id, "upahPerHari", e.target.value)
-                          }
-                          className="border rounded p-2 w-full"
+                          type="text"
+                          value={localInput[id]?.upah_perhari ?? ""}
+                          onChange={(e) => handleInputChange(id, "upah_perhari", e.target.value)}
+                          className={`border rounded p-2 w-full focus:ring-2 focus:ring-[#006400] outline-none ${errors[id] ? 'border-red-500' : 'border-slate-200'}`}
                         />
                         {errors[id] && (
-                          <span className="absolute left-0 -bottom-4 text-red-600 text-xs">
+                          <span className="absolute left-1/2 -translate-x-1/2 -bottom-1 text-red-600 text-[10px] font-bold whitespace-nowrap bg-white px-1">
                             {errors[id]}
                           </span>
                         )}
-                      </>
+                      </div>
                     ) : (
-                      <span>{item.upahPerHari}</span>
+                      <span className="text-slate-800 text-base font-semibold">{formatRupiah(item.upah_perhari)}</span>
                     )}
                   </td>
-
-                  {/* Bonus */}
-                  <td className="p-2 relative">
+                  <td className="p-4 text-center relative">
                     {isEditing ? (
                       <input
-                        type="number"
-                        placeholder="Isi bonus"
-                        value={getInputValue(item, "bonus")}
-                        onChange={(e) =>
-                          handleInputChange(id, "bonus", e.target.value)
-                        }
-                        className="border rounded p-2 w-full"
+                        type="text"
+                        value={localInput[id]?.bonus ?? ""}
+                        onChange={(e) => handleInputChange(id, "bonus", e.target.value)}
+                        className="border border-slate-200 rounded p-2 w-[150px] mx-auto focus:ring-2 focus:ring-[#006400] outline-none"
                       />
                     ) : (
-                      <span>{item.bonus ?? 0}</span>
+                      <span className="text-emerald-700 text-base font-medium">{formatRupiah(item.bonus ?? 0)}</span>
                     )}
                   </td>
-
-                  <td className="p-2 flex justify-center gap-2">
-                    <ButtonModular
-                      variant="warning"
-                      onClick={() => handleRowEdit(id)}
-                    >
-                      Edit
-                    </ButtonModular>
-                    <ButtonModular
-                      variant="danger"
-                      onClick={() => handleRowCancel(id)}
-                    >
-                      Batal
-                    </ButtonModular>
+                  <td className="p-4 text-center">
+                    <div className="flex justify-center gap-2">
+                      {isEditing ? (
+                        <>
+                          <ButtonModular variant="success" onClick={() => handleSave(id)} className="px-5 py-2.5 text-lg">Simpan</ButtonModular>
+                          <ButtonModular variant="danger" onClick={() => onCancel(id)} className="px-5 py-2.5 text-lg">Batal</ButtonModular>
+                        </>
+                      ) : (
+                        <ButtonModular 
+                          variant="warning" 
+                          onClick={() => onEdit(id)} 
+                          className="px-5 py-2.5 text-lg"
+                        >
+                          Edit
+                        </ButtonModular>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
-            })
-          ) : (
-            <tr>
-              <td
-                colSpan={4}
-                className="p-3 text-center italic text-gray-500"
-              >
-                Data Tidak Ditemukan
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            })}
+          </tbody>
+        </table>
+      </div>
+      {showPopup && <PopupSuccess message="Data gaji berhasil disimpan" onClose={() => setShowPopup(false)} />}
+      <style>{`
+        #manajemenGajiTable th, #manajemenGajiTable td { white-space: nowrap !important; text-align: center !important; }
+        .dataTables_wrapper .dataTables_filter input, .dataTables_wrapper .dataTables_length select { border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 6px 12px !important; outline: none !important; }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: #006400 !important; color: white !important; border: none !important; border-radius: 6px !important; }
+      `}</style>
     </div>
   );
 };

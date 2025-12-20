@@ -8,27 +8,60 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:css": "tailwindcss -i ./src/style.css -o ./dist/output.css --watch"
+    "build:css": "tailwindcss -i ./src/style.css -o ./dist/output.css --watch",
+    "test": "jest --watchAll" 
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.13",
+    "baseline-browser-mapping": "^2.8.29",
+    "datatables.net": "^2.3.5",
+    "datatables.net-dt": "^2.3.5",
+    "highlight": "^0.2.4",
+    "jquery": "^3.7.1",
+    "jquery-highlight": "^3.5.0",
+    "jwt-decode": "^3.1.2",
     "lucide-react": "^0.545.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.2"
+    "mark.js": "^8.11.1",
+    
+    "react": "19.1.1",      
+    "react-dom": "19.1.1",  
+    
+    "react-router-dom": "^7.9.2",
+    "react-transition-group": "^4.4.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-react": "^7.28.5",
     "@eslint/js": "^9.33.0",
-    "@types/react": "^19.1.10",
-    "@types/react-dom": "^19.1.7",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.1.1",
+    "@types/react": "^19.1.1",
+    "@types/react-dom": "^19.1.1",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.21",
+    "axios": "^1.13.2",
     "eslint": "^9.33.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0", 
+    "jest-environment-jsdom": "^29.7.0", 
     "postcss": "^8.5.6",
+    
+    "react-test-renderer": "19.1.1",
     "tailwindcss": "^4.1.13",
     "vite": "^7.1.2"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/setupTests.js"
+    ],
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+      "^jquery-highlight/jquery.highlight.js$": "<rootDir>/__mocks__/jquery-highlight.js"
+    }
   }
 }

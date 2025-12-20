@@ -69,7 +69,7 @@ export const PresensiProvider = ({ children }) => {
   );
 };
 
-// hooks biar gampang dipakai
+
 export const usePresensiContext = () => useContext(PresensiContext);
 export const usePresensi = () => useContext(PresensiContext); // alias
 

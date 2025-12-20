@@ -1,43 +1,58 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ManajemenKaryawanComponent from "../components/ManajemenKaryawan";
 import { useKaryawanContext } from "../context/KaryawanContext";
+import jwt_decode from "jwt-decode";
 
 function ManajemenKaryawan() {
-  const { karyawanList, setKaryawanList } = useKaryawanContext();
-  const [form, setForm] = useState({ nama: "", ttl: "", jk: "", alamat: "" });
+  const { karyawanList, addKaryawan, updateKaryawan, deleteKaryawan } = useKaryawanContext();
+  const [form, setForm] = useState({ nama_karyawan: "", ttl: "", jenis_kelamin: "", alamat: "" });
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [role, setRole] = useState(null);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = jwt_decode(token); 
+
+      setRole(decoded.role);
+    }
+  }, []);
+
+  // jika bukan Super Admin, tampilkan pesan
+  if (role !== "Super Admin") {
+    return (
+      <div className="p-6 text-center text-red-500">
+        Anda tidak memiliki akses ke halaman ini
+      </div>
+    );
+  }
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (editingId) {
-      setKaryawanList(
-        karyawanList.map((k) =>
-          k.id === editingId ? { ...form, id: editingId } : k
-        )
-      );
+      updateKaryawan(editingId, form);
       setEditingId(null);
     } else {
-      setKaryawanList([...karyawanList, { ...form, id: Date.now() }]);
+      addKaryawan(form);
     }
-    setForm({ nama: "", ttl: "", jk: "", alamat: "" });
+    setForm({ nama_karyawan: "", ttl: "", jenis_kelamin: "", alamat: "" });
     setShowForm(false);
   };
 
-  const handleEdit = (id) => {
-    const data = karyawanList.find((k) => k.id === id);
+  const handleEdit = (id_karyawan) => {
+    const data = karyawanList.find((k) => k.id_karyawan === id_karyawan);
     setForm(data);
-    setEditingId(id);
+    setEditingId(id_karyawan);
     setShowForm(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id_karyawan) => {
     if (window.confirm("Yakin ingin menghapus karyawan ini?")) {
-      setKaryawanList(karyawanList.filter((k) => k.id !== id));
+      deleteKaryawan(id_karyawan);
+      if (editingId === id_karyawan) setEditingId(null);
     }
   };
 

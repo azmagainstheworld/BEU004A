@@ -5,12 +5,9 @@ export default function Logout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Hapus semua data login
-    localStorage.removeItem("user");
-
-    // Redirect ke halaman login
+    localStorage.removeItem("token");
     navigate("/login");
   }, [navigate]);
 
-  return null; // Tidak perlu tampilan apa pun
+  return null;
 }

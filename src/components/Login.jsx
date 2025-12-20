@@ -1,116 +1,112 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { User, Lock, LogIn, ShieldCheck } from "lucide-react";
 
-export default function Login({ onSubmit }) {
-  const navigate = useNavigate();
-  const [error, setError] = useState("");
-
+export default function Login({ onLogin, error, loading, onForgotPassword }) {
+  
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError("");
-
     const data = new FormData(e.currentTarget);
-    const username = data.get("username");
-    const password = data.get("password");
-
-    // Panggil onSubmit, tangani login gagal
-    if (onSubmit) {
-      const result = onSubmit({ username, password });
-      // Jika username/password salah atau kosong, tampilkan pesan yang sama
-      if (!result) {
-        setError("Login tidak valid, silakan coba lagi");
-      }
-    }
+    const username = data.get("username")?.trim();
+    const password = data.get("password")?.trim();
+    
+    // Melempar data ke Page untuk divalidasi dan diproses
+    onLogin(username, password);
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
-      {/* Left ilustrasi 50% */}
-      <div className="hidden md:block w-1/2 h-full relative">
-        <img
-          src="src/assets/jnt-cargo.png"
-          alt="Ilustrasi Logistik"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-black/25"></div>
-      </div>
+    <div className="min-h-screen w-full flex items-center justify-center relative bg-slate-900 overflow-hidden">
+      <div 
+        className="absolute inset-0 z-0 scale-100 transition-all duration-700"
+        style={{
+          backgroundImage: "url('src/assets/jnt-cargo.png')", 
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "brightness(0.4)" 
+        }}
+      ></div>
+      <div className="absolute inset-0 z-1 bg-gradient-to-t from-black/80 via-transparent to-[#006400]/30"></div>
 
-      {/* Right - form */}
-      <div className="flex w-full md:w-1/2 h-full items-center justify-center bg-white">
-        <div className="w-full max-w-md p-8">
-          <div className="flex flex-col items-center mb-4">
-            <img
-              src="src/assets/logojnt.png"
-              alt="logo"
-              className="h-24 w-24 object-contain rounded-full shadow-md border-2 border-white"
-            />
+      <div className="relative z-10 w-full max-w-[420px] px-6">
+        <div className="bg-white/10 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/20 p-10 animate-scaleIn h-[550px] flex flex-col">
+          
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-black text-white tracking-tight">Selamat Datang</h2>
+            <p className="text-emerald-50 text-[10px] font-bold uppercase tracking-[0.2em] opacity-80 mt-2">
+              SISTEM J&T CARGO BEU004A
+            </p>
           </div>
 
-          <h2 className="text-2xl font-bold mb-4 text-center text-green-900">
-            Selamat Datang!
-          </h2>
-          <p className="text-sm text-gray-600 mb-6 text-center">
-            Silakan login untuk mengakses akun Anda.
-          </p>
+          {/* Reserved Space untuk Error Message */}
+          <div className="h-14 flex items-center mb-4"> 
+             {error && (
+              <div className="w-full bg-rose-500/20 border border-rose-500/30 text-rose-100 px-4 py-2.5 rounded-2xl text-[11px] font-bold flex items-center gap-2 animate-shake">
+                <ShieldCheck className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+          </div>
 
-          {/* Kotak error */}
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-center">
-              {error}
+          <form onSubmit={handleSubmit} className="space-y-5 flex-grow">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-emerald-100/60 uppercase tracking-widest ml-1">Username</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-emerald-100/40 group-focus-within:text-emerald-400 transition-colors" />
+                </div>
+                <input
+                  name="username"
+                  type="text"
+                  autoComplete="off"
+                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400/50 transition-all text-white placeholder:text-emerald-100/20 font-medium"
+                  placeholder="Masukkan username"
+                />
+              </div>
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              name="username"
-              type="text"
-              placeholder="Masukkan username"
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009C4C]"
-            />
-            <input
-              name="password"
-              type="password"
-              placeholder="Masukkan password"
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#009C4C]"
-            />
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-emerald-100/60 uppercase tracking-widest ml-1">Password</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-emerald-100/40 group-focus-within:text-emerald-400 transition-colors" />
+                </div>
+                <input
+                  name="password"
+                  type="password"
+                  autoComplete="off"
+                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400/50 transition-all text-white placeholder:text-emerald-100/20 font-medium"
+                  placeholder="Masukkan password"
+                />
+              </div>
+            </div>
 
             <button
               type="submit"
-              className="w-full bg-[#009C4C] hover:bg-[#007a38] text-white font-semibold py-2 rounded-lg transition"
+              disabled={loading}
+              className="w-full mt-6 bg-[#006400] hover:bg-[#004d00] text-white font-black py-4 rounded-2xl shadow-xl shadow-emerald-900/40 transition-all duration-300 active:scale-[0.97] flex items-center justify-center gap-3 disabled:opacity-50 tracking-widest text-sm"
             >
-              Masuk
+              {loading ? (
+                <div className="w-6 h-6 border-[3px] border-white/30 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  <span>MASUK</span>
+                  <LogIn className="w-5 h-5" />
+                </>
+              )}
             </button>
           </form>
 
-          <div className="mt-4 text-center text-sm text-gray-500">
-            <a
-              href="#"
-              className="underline"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/lupa-password");
-              }}
-            >
-              Lupa password?
-            </a>
+          <div className="mt-auto pt-6 text-center space-y-4">
+             <button 
+               type="button"
+               onClick={onForgotPassword}
+               className="text-emerald-100/50 text-[11px] hover:text-white transition-colors underline underline-offset-4 font-bold uppercase tracking-wider"
+             >
+               Lupa password?
+             </button>
+             <p className="text-emerald-100/30 text-[9px] uppercase tracking-[0.3em] font-bold">
+               &copy; {new Date().getFullYear()} J&T Cargo Mitra BEU004A
+             </p>
           </div>
-        </div>
-      </div>
-
-      {/* Mobile ilustrasi */}
-      <div className="md:hidden w-full h-56 relative">
-        <img
-          src="src/assets/jnt-cargo.png"
-          alt="Ilustrasi Logistik"
-          className="object-cover w-full h-full object-center"
-        />
-        <div className="absolute inset-0 bg-black/25"></div>
-        <div className="absolute left-4 top-4">
-          <img
-            src="src/assets/logojnt.png"
-            alt="logo"
-            className="h-14 w-14 object-contain rounded-full shadow-md border-2 border-white"
-          />
         </div>
       </div>
     </div>

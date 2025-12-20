@@ -11,7 +11,7 @@ export default function OutgoingPage() {
   };
 
   return (
-    <div className="flex-1 bg-[#EDFFEC] min-h-screen">
+    <div className="flex-1 bg-green-50 min-h-screen">
       <InputOutgoing
         outgoingList={outgoingList}
         setOutgoingList={setOutgoingList}
