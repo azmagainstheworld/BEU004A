@@ -60,7 +60,7 @@ function Sidebar({ isOpen, setIsOpen, onLogoutClick }) {
     >
       <div className="flex flex-col items-center justify-center mt-6 mb-10">
         <img
-          src="src/assets/logojnt.png"
+          src="https://ik.imagekit.io/gunnams/Photobooth/logojnt.png"
           alt="Logo"
           className="h-32 w-32 object-contain rounded-full mx-auto"
         />
