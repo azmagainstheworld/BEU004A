@@ -53,7 +53,9 @@ function Dashboard() {
           search: "Cari:",
           lengthMenu: "Tampilkan _MENU_ data",
           info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-          paginate: { next: "Next", previous: "Prev" }
+          paginate: { next: "Next", previous: "Prev" },
+          emptyTable: "<span class='italic text-slate-400'>Data tidak ditemukan</span>",
+          zeroRecords: "<span class='italic text-slate-400'>Data tidak ditemukan</span>"
         }
       });
 
