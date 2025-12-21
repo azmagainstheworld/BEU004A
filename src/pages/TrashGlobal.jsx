@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useKaryawan } from "../context/KaryawanContext";
+import { useFinance } from "../context/FinanceContext";
 import ButtonModular from "../components/ButtonModular";
 import jwt_decode from "jwt-decode";
 import PopupSuccess from "../components/PopupSuccess";
@@ -57,6 +58,14 @@ const MODULE_CONFIG = {
 
 function TrashGlobal() {
   const { fetchKaryawan } = useKaryawan();
+  const { 
+    fetchDfod, 
+    fetchDeliveryFee, 
+    fetchOutgoing, 
+    fetchPengeluaran, 
+    fetchTodayInputs, 
+    fetchLaporanKeuangan 
+  } = useFinance();
   const [userRole, setUserRole] = useState(null);
   const [trashData, setTrashData] = useState([]);
   const [filterModul, setFilterModul] = useState("Semua");
@@ -266,7 +275,7 @@ function TrashGlobal() {
     setConfirmOpen(true);
   };
 
-  const confirmYes = async () => {
+const confirmYes = async () => {
     if (!confirmData) return;
     const { item, actionType } = confirmData;
     const config = MODULE_CONFIG[item.modul_sumber];
@@ -286,7 +295,19 @@ function TrashGlobal() {
         // 1. Refresh data di halaman Trash itu sendiri
         await fetchAllTrash();
 
-        // 2. Refresh data di Context Karyawan jika yang di-restore adalah karyawan
+        // 3. REFRESH SEMUA TABEL LOG TERKAIT JIKA AKSI ADALAH RESTORE
+        if (actionType === "restore") {
+          if (item.modul_sumber === "DFOD") await fetchDfod();
+          if (item.modul_sumber === "DeliveryFee") await fetchDeliveryFee();
+          if (item.modul_sumber === "Outgoing") await fetchOutgoing();
+          if (item.modul_sumber === "Pengeluaran") await fetchPengeluaran();
+          
+          // refresh dashboard & laporan karena restore mengubah saldo
+          await fetchTodayInputs();
+          await fetchLaporanKeuangan();
+        }
+
+        // Refresh data Karyawan
         if (item.modul_sumber === "Karyawan" && actionType === "restore") {
           await fetchKaryawan();
         }
@@ -297,7 +318,6 @@ function TrashGlobal() {
     } catch (err) {
       console.error("Gagal melakukan aksi trash:", err);
     } finally {
-      // Pastikan modal konfirmasi tertutup apa pun hasilnya
       setConfirmOpen(false);
       setConfirmData(null);
     }
