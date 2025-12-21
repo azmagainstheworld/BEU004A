@@ -287,16 +287,17 @@ export default function ManajemenAkunPage() {
         return;
       }
 
-      // SUKSES - POPUP EDIT ADMIN BERHASIL
-      if (isSuperAdmin && isEditingSelf) {
-        setSuccessMessage("Password berhasil diubah. Silakan login kembali dengan password baru");
-        setShouldLogoutAfterSuccess(true);
+      if (isEditingSelf) {
+        // berlaku untuk Super Admin dan Admin 
+        setSuccessMessage("Password Anda berhasil diubah. Silakan login kembali dengan password baru.");
+        setShouldLogoutAfterSuccess(true); 
         closeModal();
-        return;
+      } else {
+        // hanya untuk Super Admin yang mubah password Admin 
+        setSuccessMessage(`Password admin ${selectedAdmin.username} berhasil diubah.`);
+        closeModal();
+        await fetchAdmins(); 
       }
-
-      setSuccessMessage(`Password admin ${selectedAdmin.username} berhasil diubah.`);
-      closeModal();
 
     } catch (err) {
       console.error(err);
