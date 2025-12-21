@@ -32,7 +32,7 @@ export const FinanceProvider = ({ children }) => {
       );
 
       const mapped = res.data.laporan.map((item) => ({
-        tanggal: item.tanggal,
+        tanggal: item.tanggal_bersih,
         kas: Number(item.Kas) || 0,
         jfs: Number(item.Saldo_JFS) || 0,
         transfer: Number(item.Transfer) || 0,
