@@ -13,7 +13,6 @@ export const KaryawanProvider = ({ children }) => {
     return token ? { headers: { Authorization: `Bearer ${token}` } } : null;
   };
 
-  // --- FETCH ALL KARYAWAN ---
   // Gunakan useCallback agar fungsi stabil dan bisa dipanggil otomatis setelah CRUD
   const fetchKaryawan = useCallback(async () => {
     const config = getAuthHeader();

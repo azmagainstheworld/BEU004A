@@ -9,7 +9,7 @@ import "datatables.net-dt/css/dataTables.dataTables.css";
 import "../index.css";
 
 export default function ManajemenKaryawanComponent() {
-  const { karyawanList, addKaryawan, updateKaryawan, deleteKaryawan } = useKaryawan();
+  const { karyawanList, fetchKaryawan, addKaryawan, updateKaryawan, deleteKaryawan } = useKaryawan();
 
   const [form, setForm] = useState({
     nama_karyawan: "",
@@ -27,8 +27,18 @@ export default function ManajemenKaryawanComponent() {
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
+    fetchKaryawan();
+  }, [fetchKaryawan]);
+
+  useEffect(() => {
     const tableId = "#manajemenKaryawanTable";
     let table;
+
+    if (!karyawanList) return;
+
+    if ($.fn.DataTable.isDataTable(tableId)) {
+      $(tableId).DataTable().destroy();
+    }
 
     const renderTableData = () => {
       if ($.fn.DataTable.isDataTable(tableId)) {
