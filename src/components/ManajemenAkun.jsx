@@ -36,93 +36,102 @@ export default function ManajemenAkunUI({
   };
   const passwordColor = getPasswordColor();
   
-  useEffect(() => {
-      const tableId = "#adminTable";
-      let table;
+useEffect(() => {
+    const tableId = "#adminTable";
+    let table;
 
-      const renderTable = () => {
-        if ($.fn.DataTable.isDataTable(tableId)) {
-          table = $(tableId).DataTable();
-          table.clear();
+    // Fungsi untuk memetakan data admin ke format baris DataTable
+    const getRows = () => {
+      if (!adminList || adminList.length === 0) return [];
+      
+      return adminList.map((admin, index) => {
+        const adminData = JSON.stringify(admin).replace(/'/g, "&apos;");
+        return [
+          index + 1,
+          `<div class="font-medium text-slate-900">${admin.username}</div>`,
+          `<div class="text-slate-600">${admin.email}</div>`,
+          `<span class="px-3 py-1 rounded-full text-xs font-semibold ${
+            admin.role === "Super Admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+          }">${admin.role}</span>`,
+          `<div class="flex justify-center gap-2">
+            <button 
+              class="btn-edit-pw px-5 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 text-white transition-all active:scale-95" 
+              data-admin='${adminData}'
+            >
+              Ubah Password
+            </button>
+            <button 
+              class="btn-delete-admin px-5 py-2.5 rounded-lg font-semibold text-sm bg-rose-500 text-white transition-all active:scale-95" 
+              data-admin='${adminData}'
+            >
+              Hapus
+            </button>
+          </div>`
+        ];
+      });
+    };
 
-          if (adminList && adminList.length > 0) {
-            const rows = adminList.map((admin, index) => {
-              const adminData = JSON.stringify(admin).replace(/'/g, "&apos;");
+    const initOrUpdateTable = () => {
+      if ($.fn.DataTable.isDataTable(tableId)) {
+        // Jika tabel sudah ada, cukup update datanya saja
+        table = $(tableId).DataTable();
+        table.clear().rows.add(getRows()).draw(false);
+      } else {
+        // Inisialisasi awal tabel
+        table = $(tableId).DataTable({
+          paging: true,
+          searching: true,
+          info: true,
+          ordering: true,
+          scrollX: true,
+          autoWidth: false,
+          pageLength: 10,
+          dom: '<"flex justify-between items-center mb-4"lf>rt<"flex justify-between items-center mt-4"ip>',
+          language: { search: "Cari:", emptyTable: "Tidak ada data akun" },
+          data: getRows() // Isi data langsung saat init
+        });
 
-              return [
-                index + 1,
-                `<div class="font-medium text-slate-900">${admin.username}</div>`,
-                `<div class="text-slate-600">${admin.email}</div>`,
-                `<span class="px-3 py-1 rounded-full text-xs font-semibold ${
-                  admin.roles === "Super Admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
-                }">${admin.roles}</span>`,
-                `<div class="flex justify-center gap-2">
-                  <button 
-                    class="btn-edit-pw px-5 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 text-white transition-all active:scale-95" 
-                    data-admin='${adminData}'
-                  >
-                    Ubah Password
-                  </button>
-                  <button 
-                    class="btn-delete-admin px-5 py-2.5 rounded-lg font-semibold text-sm bg-rose-500 text-white transition-all active:scale-95" 
-                    data-admin='${adminData}'
-                  >
-                    Hapus
-                  </button>
-                </div>`
-              ];
-            });
-            table.rows.add(rows);
-          }
-          table.draw(false);
-        } else {
-          table = $(tableId).DataTable({
-            paging: true,
-            searching: true,
-            info: true,
-            ordering: true,
-            scrollX: true,
-            autoWidth: false,
-            pageLength: 10,
-            dom: '<"flex justify-between items-center mb-4"lf>rt<"flex justify-between items-center mt-4"ip>',
-            language: { search: "Cari:", emptyTable: "Tidak ada data akun" }
+        // Fitur Highlight
+        table.on("draw.dt", function () {
+          const body = $(table.table().body());
+          const searchValue = table.search();
+          body.unhighlight();
+          if (searchValue) body.highlight(searchValue);
+        });
+      }
+    };
+
+    const timer = setTimeout(() => {
+      initOrUpdateTable();
+
+      // Event Delegation untuk tombol
+      $(tableId).off("click", ".btn-edit-pw").on("click", ".btn-edit-pw", function() {
+        const adminData = $(this).data("admin");
+        if (adminData) {
+          onEditPassword({ 
+            id: adminData.id_user_jntcargobeu004a, 
+            username: adminData.username, 
+            email: adminData.email 
           });
-
-          table.on("draw.dt", function () {
-            const body = $(table.table().body());
-            const searchValue = table.search();
-            body.unhighlight();
-            if (searchValue) body.highlight(searchValue);
-          });
-
-          renderTable();
         }
-      };
+      });
 
-      const timer = setTimeout(() => {
-        renderTable();
+      $(tableId).off("click", ".btn-delete-admin").on("click", ".btn-delete-admin", function() {
+        const adminData = $(this).data("admin");
+        if (adminData) {
+          onDeleteAdmin(adminData);
+        }
+      });
+    }, 150);
 
-        $(tableId).off("click", ".btn-edit-pw").on("click", ".btn-edit-pw", function() {
-          const adminData = $(this).data("admin");
-          if (adminData) {
-            onEditPassword({ 
-              id: adminData.id_user_jntcargobeu004a, 
-              username: adminData.username, 
-              email: adminData.email 
-            });
-          }
-        });
-
-        $(tableId).off("click", ".btn-delete-admin").on("click", ".btn-delete-admin", function() {
-          const adminData = $(this).data("admin");
-          if (adminData) {
-            onDeleteAdmin(adminData);
-          }
-        });
-      }, 150);
-
-      return () => clearTimeout(timer);
-    }, [adminList]);
+    return () => {
+      clearTimeout(timer);
+      // Opsional: Jika ingin benar-benar bersih saat pindah halaman
+      if ($.fn.DataTable.isDataTable(tableId)) {
+        $(tableId).DataTable().destroy();
+      }
+    };
+  }, [adminList]);
 
   const isSuperAdmin = superAdmin?.role === "Super Admin";
 
