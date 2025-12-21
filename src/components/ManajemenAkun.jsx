@@ -131,7 +131,7 @@ useEffect(() => {
     };
   }, [adminList]);
 
-  const isSuperAdmin = superAdmin?.roles === "Super Admin";
+  const isSuperAdmin = superAdmin?.role === "Super Admin";
 
   return (
     <div className="space-y-6 animate-fadeIn pb-6">
@@ -173,7 +173,7 @@ useEffect(() => {
                 <span className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border shadow-sm ${
                   isSuperAdmin ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'
                 }`}>
-                  <ShieldCheck className="w-3.5 h-3.5 inline mr-1.5 mb-0.5" /> {superAdmin?.roles || "-"}
+                  <ShieldCheck className="w-3.5 h-3.5 inline mr-1.5 mb-0.5" /> {superAdmin?.role || "-"}
                 </span>
                 <span className="px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border bg-slate-50 text-slate-600 border-slate-100 shadow-sm">
                   <History className="w-3.5 h-3.5 inline mr-1.5 mb-0.5" /> Login: {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WITA
