@@ -69,7 +69,11 @@ function App() {
   window.fetch = ((originalFetch) => {
     return async (...args) => {
       const response = await originalFetch(...args);
-      if (response.status === 401) {
+
+    // tidak jalankan logika auto-logout jika request berasal dari endpoint LOGIN
+      const isLoginRequest = args[0].includes("/users/login");
+
+      if (response.status === 401 && !isLoginRequest) {
         localStorage.removeItem("token");
         localStorage.setItem("sessionExpired", "true");
         window.location.href = "/login";

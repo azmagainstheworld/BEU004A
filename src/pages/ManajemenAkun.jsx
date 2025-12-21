@@ -237,7 +237,7 @@ export default function ManajemenAkunPage() {
     if (!token) return setSuccessMessage("Token tidak ditemukan.");
 
     const isSuperAdmin = superAdmin.role === "Super Admin";
-    const isEditingSelf = selectedAdmin.id === superAdmin.id_user_jntcargobeu004a;
+    const isEditingSelf = selectedAdmin.id === superAdmin.id;
 
     try {
       let url = "";
@@ -289,7 +289,7 @@ export default function ManajemenAkunPage() {
 
       // SUKSES - POPUP EDIT ADMIN BERHASIL
       if (isSuperAdmin && isEditingSelf) {
-        setSuccessMessage("Password berhasil diubah.");
+        setSuccessMessage("Password berhasil diubah. Silakan login kembali dengan password baru");
         setShouldLogoutAfterSuccess(true);
         closeModal();
         return;
