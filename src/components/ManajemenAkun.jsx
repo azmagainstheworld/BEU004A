@@ -51,8 +51,8 @@ useEffect(() => {
           `<div class="font-medium text-slate-900">${admin.username}</div>`,
           `<div class="text-slate-600">${admin.email}</div>`,
           `<span class="px-3 py-1 rounded-full text-xs font-semibold ${
-            admin.role === "Super Admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
-          }">${admin.role}</span>`,
+            admin.roles === "Super Admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+          }">${admin.roles}</span>`,
           `<div class="flex justify-center gap-2">
             <button 
               class="btn-edit-pw px-5 py-2.5 rounded-lg font-semibold text-sm bg-amber-500 text-white transition-all active:scale-95" 
@@ -73,11 +73,9 @@ useEffect(() => {
 
     const initOrUpdateTable = () => {
       if ($.fn.DataTable.isDataTable(tableId)) {
-        // Jika tabel sudah ada, cukup update datanya saja
         table = $(tableId).DataTable();
         table.clear().rows.add(getRows()).draw(false);
       } else {
-        // Inisialisasi awal tabel
         table = $(tableId).DataTable({
           paging: true,
           searching: true,
@@ -133,7 +131,7 @@ useEffect(() => {
     };
   }, [adminList]);
 
-  const isSuperAdmin = superAdmin?.role === "Super Admin";
+  const isSuperAdmin = superAdmin?.roles === "Super Admin";
 
   return (
     <div className="space-y-6 animate-fadeIn pb-6">
@@ -175,7 +173,7 @@ useEffect(() => {
                 <span className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border shadow-sm ${
                   isSuperAdmin ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-blue-50 text-blue-700 border-blue-100'
                 }`}>
-                  <ShieldCheck className="w-3.5 h-3.5 inline mr-1.5 mb-0.5" /> {superAdmin?.role || "-"}
+                  <ShieldCheck className="w-3.5 h-3.5 inline mr-1.5 mb-0.5" /> {superAdmin?.roles || "-"}
                 </span>
                 <span className="px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border bg-slate-50 text-slate-600 border-slate-100 shadow-sm">
                   <History className="w-3.5 h-3.5 inline mr-1.5 mb-0.5" /> Login: {new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WITA
