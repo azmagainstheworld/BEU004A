@@ -114,23 +114,43 @@ function InputOutgoing() {
   }, [outgoingList, userRole]);
 
   // 3. Validasi & Handlers
-  const validate = (name, value) => {
+  const validate = (name, value, otherValue) => {
+    const num = parseInt(value.replace(/\./g, "")) || 0;
+    
     if (name === "nominal") {
-      const num = parseInt(value.replace(/\./g, ""));
-      return (!num || num < 1000) ? "Nominal minimal Rp 1.000" : "";
+        if (!num || num < 1000) return "Nominal minimal Rp 1.000";
+        return "";
     }
+
+    if (name === "potongan") {
+        const nomVal = parseInt(otherValue.replace(/\./g, "")) || 0;
+        if (num > nomVal) return "Potongan tidak boleh melebihi nominal";
+        return "";
+    }
+
     if (name === "pembayaran") return !value ? "Pilih jenis pembayaran" : "";
     return "";
-  };
+};
 
-  const handleInputChange = (e, setter, name) => {
-    let val = e.target.value.replace(/\D/g, "");
-    if (val.length > 1 && val.startsWith("0")) val = val.replace(/^0+/, "");
-    const formatted = val.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    setter(formatted);
-    // Live validation
-    setErrors(prev => ({ ...prev, [name]: validate(name, formatted) }));
-  };
+const handleInputChange = (e, setter, name) => {
+  let val = e.target.value.replace(/\D/g, "");
+  if (val.length > 1 && val.startsWith("0")) val = val.replace(/^0+/, "");
+  const formatted = val.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  setter(formatted);
+
+  // Live validation logic
+  setErrors((prev) => {
+    const newErrors = { ...prev };
+    if (name === "nominal") {
+      newErrors.nominal = validate("nominal", formatted);
+      // Re-validate potongan terhadap nominal yang baru saja diketik
+      newErrors.potongan = validate("potongan", potongan, formatted);
+    } else if (name === "potongan") {
+      newErrors.potongan = validate("potongan", formatted, nominal);
+    }
+    return newErrors;
+  });
+};
 
   const resetForm = () => {
     setNominal(""); setPotongan(""); setPembayaran(""); setEditingId(null); setErrors({});
