@@ -156,42 +156,38 @@ const handleInputChange = (e, setter, name) => {
     setNominal(""); setPotongan(""); setPembayaran(""); setEditingId(null); setErrors({});
   };
 
-    const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Validasi nominal dan pembayaran 
-    const errNom = validate("nominal", nominal);
-    const errPay = validate("pembayaran", pembayaran);
-    
-    if (errNom || errPay) {
-        setErrors({ nominal: errNom, pembayaran: errPay });
-        return;
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  const errNom = validate("nominal", nominal);
+  const errPot = validate("potongan", potongan, nominal);
+  const errPay = validate("pembayaran", pembayaran);
+  
+  if (errNom || errPot || errPay) {
+      setErrors({ nominal: errNom, potongan: errPot, pembayaran: errPay });
+      return;
+  }
 
-    const payload = {
-        nominal: parseInt(nominal.replace(/\./g, "")),
-        // Jika potongan kosong, otomatis dikirim 0
-        potongan: parseInt(potongan.replace(/\./g, "")) || 0, 
-        jenis_pembayaran: pembayaran
-    };
+  const payload = {
+      nominal: parseInt(nominal.replace(/\./g, "")),
+      potongan: parseInt(potongan.replace(/\./g, "")) || 0, 
+      jenis_pembayaran: pembayaran
+  };
 
-    try {
-        if (editingId) {
+  try {
+      if (editingId) {
         await updateOutgoingById(editingId, payload);
         setPopupMessage("Data berhasil diupdate!");
-        } else {
+      } else {
         await addOutgoing(payload);
         setPopupMessage("Data berhasil ditambahkan!");
-        }
-        
-        // Reset dan tampilkan popup sukses
-        resetForm();
-        setShowPopup(true);
-    } catch (error) {
-        // Error ditangani oleh catch di context
-        console.error("Gagal menyimpan data outgoing", error);
-    }
-    };
+      }
+      resetForm();
+      setShowPopup(true);
+  } catch (error) {
+      console.error("Gagal menyimpan data outgoing", error);
+  }
+};
 
   const handleEdit = (item) => {
     setEditingId(item.id_input_outgoing);
@@ -228,9 +224,17 @@ const handleInputChange = (e, setter, name) => {
               {errors.nominal && <p className="text-red-500 text-xs mt-1">{errors.nominal}</p>}
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-600 mb-2">Potongan Harga</label>
-              <input type="text" value={potongan} onChange={(e) => handleInputChange(e, setPotongan, "potongan")} 
-                className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[#006400] outline-none transition" placeholder="Rp 0" />
+            <label className="block text-sm font-semibold text-slate-600 mb-2">Potongan Harga</label>
+            <input 
+                type="text" 
+                value={potongan} 
+                onChange={(e) => handleInputChange(e, setPotongan, "potongan")} 
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#006400] outline-none transition ${
+                errors.potongan ? "border-red-500" : "border-slate-200"
+                }`} 
+                placeholder="Rp 0" 
+            />
+            {errors.potongan && <p className="text-red-500 text-xs mt-1">{errors.potongan}</p>}
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-600 mb-2">Jenis Pembayaran</label>
