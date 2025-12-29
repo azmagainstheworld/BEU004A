@@ -1,16 +1,16 @@
 import React from "react";
 import Presensi from "../components/Presensi";
-import { useKaryawanContext } from "../context/KaryawanContext"; 
+import { useKaryawan } from "../context/KaryawanContext"; // Pastikan nama hook benar (useKaryawan)
 
 const PresensiPage = () => {
-  const { karyawanList } = useKaryawanContext();
+  // Ambil data dari KaryawanContext
+  const { karyawanList } = useKaryawan();
 
   return (
-    <PresensiProvider>
-      <main className="flex-1 bg-[#F8FAFC] p-6 min-h-screen">
-        <Presensi karyawanList={karyawanList} />
-      </main>
-    </PresensiProvider>
+    <main className="flex-1 bg-[#F8FAFC] p-6 min-h-screen">
+      {/* Kirim data ke komponen UI Presensi */}
+      <Presensi karyawanList={karyawanList} />
+    </main>
   );
 };
 
