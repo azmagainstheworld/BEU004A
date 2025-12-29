@@ -1,7 +1,6 @@
 import React from "react";
 import Presensi from "../components/Presensi";
 import { useKaryawanContext } from "../context/KaryawanContext"; 
-import { PresensiProvider } from "../context/PresensiContext"; 
 
 const PresensiPage = () => {
   const { karyawanList } = useKaryawanContext();
