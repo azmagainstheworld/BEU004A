@@ -1,6 +1,11 @@
 // src/App.jsx
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import MainLayout from "./pages/layout/MainLayout";
 import AuthLayout from "./pages/layout/AuthLayout";
@@ -8,7 +13,7 @@ import AuthLayout from "./pages/layout/AuthLayout";
 import Login from "./pages/Login";
 import Logout from "./pages/Logout";
 import LupaPassword from "./pages/LupaPassword";
-import ResetPassword from "./pages/ResetPassword"; 
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import GajiKaryawan from "./pages/GajiKaryawan";
 import InputDeliveryFee from "./pages/InputDeliveryFee";
@@ -26,12 +31,12 @@ import TrashGlobal from "./pages/TrashGlobal";
 import { FinanceProvider } from "./context/FinanceContext";
 import { KaryawanProvider } from "./context/KaryawanContext";
 import { PresensiProvider } from "./context/PresensiContext";
-
+// fix build v3.
 import jwt_decode from "jwt-decode";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem("token");
-  
+
   // 1. Cek apakah sudah login
   if (!token) {
     return <Navigate to="/login" replace />;
@@ -51,7 +56,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       return <Navigate to="/login" replace />;
     }
   }
-  
+
   return children;
 };
 
@@ -63,7 +68,7 @@ function App() {
       if (token) {
         try {
           // Decode payload JWT tanpa library untuk mengambil properti 'exp'
-          const payload = JSON.parse(atob(token.split('.')[1]));
+          const payload = JSON.parse(atob(token.split(".")[1]));
           const expiryTime = payload.exp * 1000; // konversi ke milidetik
           const currentTime = Date.now();
 
@@ -83,12 +88,11 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-
   window.fetch = ((originalFetch) => {
     return async (...args) => {
       const response = await originalFetch(...args);
 
-    // tidak jalankan logika auto-logout jika request berasal dari endpoint LOGIN
+      // tidak jalankan logika auto-logout jika request berasal dari endpoint LOGIN
       const isLoginRequest = args[0].includes("/users/login");
 
       if (response.status === 401 && !isLoginRequest) {
@@ -99,20 +103,40 @@ function App() {
       return response;
     };
   })(window.fetch);
-  
+
   return (
     <Router>
       <KaryawanProvider>
         <PresensiProvider>
           <FinanceProvider>
             <Routes>
-              
-              <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
+              <Route
+                path="/login"
+                element={
+                  <AuthLayout>
+                    <Login />
+                  </AuthLayout>
+                }
+              />
               <Route path="/logout" element={<Logout />} />
 
               {/* Lupa / Reset Password */}
-              <Route path="/lupa-password" element={<AuthLayout><LupaPassword /></AuthLayout>} />
-              <Route path="/reset-password" element={<AuthLayout><ResetPassword /></AuthLayout>} />
+              <Route
+                path="/lupa-password"
+                element={
+                  <AuthLayout>
+                    <LupaPassword />
+                  </AuthLayout>
+                }
+              />
+              <Route
+                path="/reset-password"
+                element={
+                  <AuthLayout>
+                    <ResetPassword />
+                  </AuthLayout>
+                }
+              />
 
               {/* Main routes */}
               <Route
@@ -123,48 +147,66 @@ function App() {
                       <Routes>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/input-dfod" element={<InputDfod />} />
-                        <Route path="/input-outgoing" element={<InputOutgoing />} />
-                        <Route path="/input-delivery-fee" element={<InputDeliveryFee />} />
-                        <Route path="/input-pengeluaran-kas" element={<InputPengeluaranKas />} />
-                        <Route path="/laporan-keuangan" element={<LaporanKeuangan />} />
+                        <Route
+                          path="/input-outgoing"
+                          element={<InputOutgoing />}
+                        />
+                        <Route
+                          path="/input-delivery-fee"
+                          element={<InputDeliveryFee />}
+                        />
+                        <Route
+                          path="/input-pengeluaran-kas"
+                          element={<InputPengeluaranKas />}
+                        />
+                        <Route
+                          path="/laporan-keuangan"
+                          element={<LaporanKeuangan />}
+                        />
                         <Route path="/presensi" element={<Presensi />} />
-                        <Route path="/manajemen-akun" element={<ManajemenAkun />} />
+                        <Route
+                          path="/manajemen-akun"
+                          element={<ManajemenAkun />}
+                        />
 
                         {/* RUTE KHUSUS SUPER ADMIN */}
-                        <Route 
-                          path="/gaji-karyawan" 
+                        <Route
+                          path="/gaji-karyawan"
                           element={
                             <ProtectedRoute allowedRoles={["Super Admin"]}>
                               <GajiKaryawan />
                             </ProtectedRoute>
-                          } 
+                          }
                         />
-                        <Route 
-                          path="/manajemen-gaji" 
+                        <Route
+                          path="/manajemen-gaji"
                           element={
                             <ProtectedRoute allowedRoles={["Super Admin"]}>
                               <ManajemenGaji />
                             </ProtectedRoute>
-                          } 
+                          }
                         />
-                        <Route 
-                          path="/manajemen-karyawan" 
+                        <Route
+                          path="/manajemen-karyawan"
                           element={
                             <ProtectedRoute allowedRoles={["Super Admin"]}>
                               <ManajemenKaryawan />
                             </ProtectedRoute>
-                          } 
+                          }
                         />
-                        <Route 
-                          path="/trash" 
+                        <Route
+                          path="/trash"
                           element={
                             <ProtectedRoute allowedRoles={["Super Admin"]}>
                               <TrashGlobal />
                             </ProtectedRoute>
-                          } 
+                          }
                         />
 
-                        <Route path="*" element={<Navigate to="/login" replace />} />
+                        <Route
+                          path="*"
+                          element={<Navigate to="/login" replace />}
+                        />
                       </Routes>
                     </MainLayout>
                   </ProtectedRoute>
