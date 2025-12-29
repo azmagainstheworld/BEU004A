@@ -108,8 +108,11 @@ useEffect(() => {
 
   if (isCheckingRole) return <div className="p-10 text-center">Memverifikasi akses...</div>;
 
+// Gunakan dependensi kosong [] agar fungsi ini HANYA dibuat sekali
   const fetchAllTrash = useCallback(async () => {
     const token = localStorage.getItem("token");
+    if (!token) return;
+
     const headers = {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -174,7 +177,7 @@ useEffect(() => {
     });
 
     setTrashData(combinedData);
-  }, []);
+  }, []); // <--- PASTIKAN INI KOSONG []
 
   useEffect(() => {
     fetchAllTrash();
