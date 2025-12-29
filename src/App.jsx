@@ -106,112 +106,112 @@ function App() {
   return (
     <Router>
       <KaryawanProvider>
-          <FinanceProvider>
-            <Routes>
-              <Route
-                path="/login"
-                element={
-                  <AuthLayout>
-                    <Login />
-                  </AuthLayout>
-                }
-              />
-              <Route path="/logout" element={<Logout />} />
+        <FinanceProvider>
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                <AuthLayout>
+                  <Login />
+                </AuthLayout>
+              }
+            />
+            <Route path="/logout" element={<Logout />} />
 
-              {/* Lupa / Reset Password */}
-              <Route
-                path="/lupa-password"
-                element={
-                  <AuthLayout>
-                    <LupaPassword />
-                  </AuthLayout>
-                }
-              />
-              <Route
-                path="/reset-password"
-                element={
-                  <AuthLayout>
-                    <ResetPassword />
-                  </AuthLayout>
-                }
-              />
+            {/* Lupa / Reset Password */}
+            <Route
+              path="/lupa-password"
+              element={
+                <AuthLayout>
+                  <LupaPassword />
+                </AuthLayout>
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <AuthLayout>
+                  <ResetPassword />
+                </AuthLayout>
+              }
+            />
 
-              {/* Main routes */}
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <Routes>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/input-dfod" element={<InputDfod />} />
-                        <Route
-                          path="/input-outgoing"
-                          element={<InputOutgoing />}
-                        />
-                        <Route
-                          path="/input-delivery-fee"
-                          element={<InputDeliveryFee />}
-                        />
-                        <Route
-                          path="/input-pengeluaran-kas"
-                          element={<InputPengeluaranKas />}
-                        />
-                        <Route
-                          path="/laporan-keuangan"
-                          element={<LaporanKeuangan />}
-                        />
-                        <Route path="/presensi" element={<Presensi />} />
-                        <Route
-                          path="/manajemen-akun"
-                          element={<ManajemenAkun />}
-                        />
+            {/* Main routes */}
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/input-dfod" element={<InputDfod />} />
+                      <Route
+                        path="/input-outgoing"
+                        element={<InputOutgoing />}
+                      />
+                      <Route
+                        path="/input-delivery-fee"
+                        element={<InputDeliveryFee />}
+                      />
+                      <Route
+                        path="/input-pengeluaran-kas"
+                        element={<InputPengeluaranKas />}
+                      />
+                      <Route
+                        path="/laporan-keuangan"
+                        element={<LaporanKeuangan />}
+                      />
+                      <Route path="/presensi" element={<Presensi />} />
+                      <Route
+                        path="/manajemen-akun"
+                        element={<ManajemenAkun />}
+                      />
 
-                        {/* RUTE KHUSUS SUPER ADMIN */}
-                        <Route
-                          path="/gaji-karyawan"
-                          element={
-                            <ProtectedRoute allowedRoles={["Super Admin"]}>
-                              <GajiKaryawan />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/manajemen-gaji"
-                          element={
-                            <ProtectedRoute allowedRoles={["Super Admin"]}>
-                              <ManajemenGaji />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/manajemen-karyawan"
-                          element={
-                            <ProtectedRoute allowedRoles={["Super Admin"]}>
-                              <ManajemenKaryawan />
-                            </ProtectedRoute>
-                          }
-                        />
-                        <Route
-                          path="/trash"
-                          element={
-                            <ProtectedRoute allowedRoles={["Super Admin"]}>
-                              <TrashGlobal />
-                            </ProtectedRoute>
-                          }
-                        />
+                      {/* RUTE KHUSUS SUPER ADMIN */}
+                      <Route
+                        path="/gaji-karyawan"
+                        element={
+                          <ProtectedRoute allowedRoles={["Super Admin"]}>
+                            <GajiKaryawan />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/manajemen-gaji"
+                        element={
+                          <ProtectedRoute allowedRoles={["Super Admin"]}>
+                            <ManajemenGaji />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/manajemen-karyawan"
+                        element={
+                          <ProtectedRoute allowedRoles={["Super Admin"]}>
+                            <ManajemenKaryawan />
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/trash"
+                        element={
+                          <ProtectedRoute allowedRoles={["Super Admin"]}>
+                            <TrashGlobal />
+                          </ProtectedRoute>
+                        }
+                      />
 
-                        <Route
-                          path="*"
-                          element={<Navigate to="/login" replace />}
-                        />
-                      </Routes>
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </FinanceProvider>
+                      <Route
+                        path="*"
+                        element={<Navigate to="/login" replace />}
+                      />
+                    </Routes>
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </FinanceProvider>
       </KaryawanProvider>
     </Router>
   );
