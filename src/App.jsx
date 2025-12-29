@@ -27,7 +27,7 @@ import { FinanceProvider } from "./context/FinanceContext";
 import { KaryawanProvider } from "./context/KaryawanContext";
 import { PresensiProvider } from "./context/PresensiContext";
 
-import jwt_decode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem("token");
@@ -40,7 +40,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   // 2. Jika ada allowedRoles, cek apakah role user diizinkan
   if (allowedRoles) {
     try {
-      const decoded = jwt_decode(token);
+      const decoded = jwtDecode(token);
       const userRole = decoded.role; // sesuaikan dengan key 'role' di token Anda
 
       if (!allowedRoles.includes(userRole)) {
