@@ -67,6 +67,7 @@ function TrashGlobal() {
     fetchLaporanKeuangan 
   } = useFinance();
   const [userRole, setUserRole] = useState(null);
+  const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [trashData, setTrashData] = useState([]);
   const [filterModul, setFilterModul] = useState("Semua");
   const [showPopup, setShowPopup] = useState(false);
@@ -76,7 +77,7 @@ function TrashGlobal() {
 
   const availableModules = ["Semua", ...Object.keys(MODULE_CONFIG)];
 
-  useEffect(() => {
+useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
@@ -86,7 +87,26 @@ function TrashGlobal() {
         console.error("Token tidak valid:", err);
       }
     }
+    setIsCheckingRole(false);
   }, []);
+
+  // --- PROTEKSI HALAMAN TRASH ---
+  if (!isCheckingRole && userRole !== "Super Admin") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white p-6">
+        <h2 className="text-2xl font-bold text-red-600">Akses Ditolak</h2>
+        <p className="text-slate-500 mt-2">Maaf, menu Trash hanya dapat diakses oleh Super Admin.</p>
+        <button 
+           onClick={() => window.location.href = "/dashboard"}
+           className="mt-6 px-6 py-2 bg-[#006400] text-white rounded-lg shadow-md"
+        >
+          Kembali ke Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  if (isCheckingRole) return <div className="p-10 text-center">Memverifikasi akses...</div>;
 
   const fetchAllTrash = useCallback(async () => {
     const token = localStorage.getItem("token");

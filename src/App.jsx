@@ -27,11 +27,29 @@ import { FinanceProvider } from "./context/FinanceContext";
 import { KaryawanProvider } from "./context/KaryawanContext";
 import { PresensiProvider } from "./context/PresensiContext";
 
+import jwt_decode from "jwt-decode";
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem("token");
+  
+  // 1. Cek apakah sudah login
   if (!token) {
     return <Navigate to="/login" replace />;
+  }
+
+  // 2. Jika ada allowedRoles, cek apakah role user diizinkan
+  if (allowedRoles) {
+    try {
+      const decoded = jwt_decode(token);
+      const userRole = decoded.role; // sesuaikan dengan key 'role' di token Anda
+
+      if (!allowedRoles.includes(userRole)) {
+        // Jika role tidak diizinkan, lempar ke dashboard
+        return <Navigate to="/dashboard" replace />;
+      }
+    } catch (err) {
+      return <Navigate to="/login" replace />;
+    }
   }
   
   return children;
@@ -110,11 +128,42 @@ function App() {
                         <Route path="/input-pengeluaran-kas" element={<InputPengeluaranKas />} />
                         <Route path="/laporan-keuangan" element={<LaporanKeuangan />} />
                         <Route path="/presensi" element={<Presensi />} />
-                        <Route path="/gaji-karyawan" element={<GajiKaryawan />} />
-                        <Route path="/manajemen-gaji" element={<ManajemenGaji />} />
-                        <Route path="/manajemen-karyawan" element={<ManajemenKaryawan />} />
                         <Route path="/manajemen-akun" element={<ManajemenAkun />} />
-                        <Route path="/trash" element={<TrashGlobal />} />
+
+                        {/* RUTE KHUSUS SUPER ADMIN */}
+                        <Route 
+                          path="/gaji-karyawan" 
+                          element={
+                            <ProtectedRoute allowedRoles={["Super Admin"]}>
+                              <GajiKaryawan />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        <Route 
+                          path="/manajemen-gaji" 
+                          element={
+                            <ProtectedRoute allowedRoles={["Super Admin"]}>
+                              <ManajemenGaji />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        <Route 
+                          path="/manajemen-karyawan" 
+                          element={
+                            <ProtectedRoute allowedRoles={["Super Admin"]}>
+                              <ManajemenKaryawan />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        <Route 
+                          path="/trash" 
+                          element={
+                            <ProtectedRoute allowedRoles={["Super Admin"]}>
+                              <TrashGlobal />
+                            </ProtectedRoute>
+                          } 
+                        />
+
                         <Route path="*" element={<Navigate to="/login" replace />} />
                       </Routes>
                     </MainLayout>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ManajemenGaji from "../components/ManajemenGaji";
 import { useKaryawanContext } from "../context/KaryawanContext";
+import jwt_decode from "jwt-decode";
 
 const ManajemenGajiPages = () => {
   const { karyawanList } = useKaryawanContext();
@@ -10,6 +11,19 @@ const ManajemenGajiPages = () => {
   const [editingRow, setEditingRow] = useState({});
   const [errors, setErrors] = useState({});
   const [tempData, setTempData] = useState({});
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwt_decode(token);
+        setRole(decoded.role);
+      } catch (err) {
+        console.error("Token tidak valid");
+      }
+    }
+  }, []); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -135,6 +149,15 @@ const ManajemenGajiPages = () => {
 
   if (loading && karyawanList.length === 0) {
     return <div className="p-6 text-slate-500">Memuat data manajemen gaji...</div>;
+  }
+
+  if (role !== "Super Admin") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-6">
+        <h2 className="text-2xl font-bold text-red-600">Akses Ditolak</h2>
+        <p className="text-slate-500">Halaman ini hanya untuk Super Admin.</p>
+      </div>
+    );
   }
 
   return (
