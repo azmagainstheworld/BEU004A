@@ -181,7 +181,8 @@ useEffect(() => {
 
   useEffect(() => {
     fetchAllTrash();
-  }, [fetchAllTrash]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const tableId = "#trashTable";
