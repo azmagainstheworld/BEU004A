@@ -30,7 +30,6 @@ import TrashGlobal from "./pages/TrashGlobal";
 // Context
 import { FinanceProvider } from "./context/FinanceContext";
 import { KaryawanProvider } from "./context/KaryawanContext";
-import { PresensiProvider } from "./context/PresensiContext";
 // fix build v3.
 import jwt_decode from "jwt-decode";
 
@@ -107,7 +106,6 @@ function App() {
   return (
     <Router>
       <KaryawanProvider>
-        <PresensiProvider>
           <FinanceProvider>
             <Routes>
               <Route
@@ -214,7 +212,6 @@ function App() {
               />
             </Routes>
           </FinanceProvider>
-        </PresensiProvider>
       </KaryawanProvider>
     </Router>
   );
