@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ManajemenAkunUI from "../components/ManajemenAkun";
-import jwtDecode from "jwt-decode";
+import jwt_decode from "jwt-decode";
 import PopupSuccess from "../components/PopupSuccess";
 import { useNavigate } from "react-router-dom";
 
@@ -30,7 +30,7 @@ export default function ManajemenAkunPage() {
     if (!token) return;
 
     try {
-      const decoded = jwtDecode(token);
+      const decoded = jwt_decode(token);
       setSuperAdmin({
         id: decoded.userId,
         username: decoded.username,
